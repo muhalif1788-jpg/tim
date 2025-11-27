@@ -20,7 +20,7 @@ body {
 
 /* Header Styles */
 .header {
-    background: #8B4513;
+    background: #294066;
     color: white;
     padding: 1rem 0;
     position: fixed;
@@ -51,7 +51,7 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    color: #8B4513;
+    color: #294066;
 }
 
 .logo-text {
@@ -85,18 +85,17 @@ body {
 
 .nav-link:hover,
 .nav-link.active {
-    color: #FFD700;
+    color: #494949;
 }
 
 /* Hero Section */
-.hero {
-    background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
-    color: white;
+.hero { 
     padding: 120px 0 80px;
     text-align: center;
     min-height: 100vh;
     display: flex;
     align-items: center;
+    background-image: url('../images/hero.jpg')
 }
 
 .hero-content {
@@ -174,7 +173,7 @@ body {
 
 .btn-primary {
     background: #FFD700;
-    color: #8B4513;
+    color: #294066;
 }
 
 .btn-primary:hover {
@@ -184,56 +183,19 @@ body {
 }
 
 .btn-secondary {
-    background: transparent;
-    color: white;
-    border: 2px solid white;
+    background: #FFD700;
+    color: #294066;
 }
 
 .btn-secondary:hover {
-    background: white;
-    color: #8B4513;
+    background: #FFC400;
     transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
 }
 
 .btn-small {
     padding: 8px 20px;
     font-size: 0.9rem;
-}
-
-/* Features Section */
-.features {
-    padding: 80px 0;
-    background: #f8f9fa;
-}
-
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-}
-
-.feature-card {
-    background: white;
-    padding: 2rem;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-}
-
-.feature-card:hover {
-    transform: translateY(-5px);
-}
-
-.feature-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-}
-
-.feature-card h3 {
-    margin-bottom: 1rem;
-    color: #8B4513;
-    font-size: 1.3rem;
 }
 
 /* Products Section */
@@ -242,10 +204,10 @@ body {
 }
 
 .section-title {
-    text-align: center;
+    text-align: left;
     font-size: 2.5rem;
     margin-bottom: 3rem;
-    color: #8B4513;
+    color: #294066;
 }
 
 .products-grid {
@@ -300,9 +262,356 @@ body {
     margin-bottom: 1rem;
 }
 
+.section-end {
+    text-align: right;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #294066;
+}
+
+/* Why Section Styles - Side by Side Layout */
+.why-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.why-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+/* Left Side - Features */
+.why-features {
+    padding-right: 2rem;
+}
+
+.why-header {
+    text-align: left;
+    margin-bottom: 3rem;
+}
+
+.why-subtitle {
+    font-size: 1.2rem;
+    color: #8B4513;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.why-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1.2;
+}
+
+/* Features List */
+.features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+}
+
+.feature-icon {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #8B4513, #654321);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.5rem;
+}
+
+.feature-icon i {
+    color: white;
+    width: 25px;
+    height: 25px;
+}
+
+.feature-text {
+    flex: 1;
+}
+
+.feature-text h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #8B4513;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+}
+
+.feature-text p {
+    color: #666;
+    line-height: 1.6;
+    font-size: 1rem;
+    text-align: left;
+    margin: 0;
+}
+
+.feature-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e9ecef, transparent);
+    margin: 0.5rem 0;
+}
+
+/* Right Side - Image */
+.why-image {
+    text-align: center;
+}
+
+.why-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.why-img:hover {
+    transform: scale(1.02);
+}
+
+/* Hover Effects */
+.feature-item:hover .feature-icon {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+.feature-item:hover .feature-text h3 {
+    color: #654321;
+    transition: color 0.3s ease;
+}
+
+/* Tentang Kami Section */
+.tentang-section {
+    padding: 80px 0;
+    background: white;
+}
+
+.tentang-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+/* Left Side - Image */
+.tentang-image {
+    text-align: center;
+}
+
+.tentang-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.tentang-img:hover {
+    transform: scale(1.02);
+}
+
+/* Right Side - Text Content */
+.tentang-text {
+    padding-left: 2rem;
+}
+
+.tentang-header {
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.tentang-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #8B4513;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.tentang-subtitle {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.tentang-tagline {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #e74c3c;
+    font-style: italic;
+}
+
+.tentang-description p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #555;
+    text-align: justify;
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 10px;
+    border-left: 4px solid #FFD700;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+/* Testimoni Section */
+.testimoni-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
+    color: white;
+}
+
+.testimoni-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.testimoni-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #FFD700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.testimoni-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.testimoni-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.testimoni-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+}
+
+.testimoni-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.testimoni-content {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.quote-icon {
+    font-size: 4rem;
+    color: #FFD700;
+    position: absolute;
+    top: -20px;
+    left: -10px;
+    opacity: 0.3;
+    font-family: serif;
+}
+
+.testimoni-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: white;
+    margin-left: 1.5rem;
+    font-style: italic;
+}
+
+.testimoni-author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 1.5rem;
+}
+
+.author-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #FFD700;
+}
+
+.author-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.author-info h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: #FFD700;
+}
+
+.author-info p {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+}
+
+/* Testimoni Navigation Dots */
+.testimoni-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dot.active {
+    background: #FFD700;
+    transform: scale(1.2);
+}
+
+.dot:hover {
+    background: #FFD700;
+}
+
 /* Footer */
 .footer {
-    background: #333;
+    background: #294066;
     color: white;
     padding: 50px 0 20px;
 }
@@ -316,7 +625,7 @@ body {
 
 .footer-section h3 {
     margin-bottom: 1rem;
-    color: #FFD700;
+    color: #294066;
 }
 
 .footer-bottom {

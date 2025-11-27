@@ -1,44 +1,134 @@
-// Simple interactivity for product page
 document.addEventListener('DOMContentLoaded', function() {
-    // Product button click handlers
-    const productButtons = document.querySelectorAll('.product-btn');
-    
-    productButtons.forEach(button => {
+    // Filter functionality
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const productCards = document.querySelectorAll('.product-card');
+
+    filterButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const productName = this.closest('.product-card').querySelector('.product-name').textContent;
-            alert(`Detail produk ${productName} akan ditampilkan di sini!`);
-            
-            // Add click effect
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+
+            const filterValue = this.textContent.toLowerCase();
+
+            // Filter products
+            productCards.forEach(card => {
+                const productName = card.querySelector('.product-name').textContent.toLowerCase();
+                
+                if (filterValue === 'semua' || productName.includes(filterValue)) {
+                    card.style.display = 'block';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                } else {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+    });
+
+    // Add to cart functionality
+    const addToCartButtons = document.querySelectorAll('.btn-primary');
+    
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const productCard = this.closest('.product-card');
+            const productName = productCard.querySelector('.product-name').textContent;
+            const productPrice = productCard.querySelector('.current-price').textContent;
+
+            // Add animation
             this.style.transform = 'scale(0.95)';
             setTimeout(() => {
                 this.style.transform = '';
             }, 150);
+
+            // Show success message
+            showNotification(`${productName} berhasil ditambahkan ke keranjang!`);
         });
     });
 
-    // Smooth scrolling for navigation links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
+    // Detail button functionality
+    const detailButtons = document.querySelectorAll('.btn-secondary');
+    
+    detailButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const productCard = this.closest('.product-card');
+            const productName = productCard.querySelector('.product-name').textContent;
+            
+            alert(`Detail produk: ${productName}\n\nFitur detail produk akan segera tersedia!`);
         });
     });
 
-    // Add loading animation to product images
-    const productImages = document.querySelectorAll('.product-image img');
-    productImages.forEach(img => {
-        img.addEventListener('load', function() {
-            this.style.opacity = '1';
+    // Load more functionality
+    const loadMoreBtn = document.querySelector('.btn-outline');
+    let currentItems = 6;
+
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            // Simulate loading more products
+            this.textContent = 'Memuat...';
+            this.disabled = true;
+
+            setTimeout(() => {
+                showNotification('Produk tambahan akan segera tersedia!');
+                this.textContent = 'Muat Lebih Banyak';
+                this.disabled = false;
+            }, 1500);
         });
+    }
+
+    // Notification function
+    function showNotification(message) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i data-feather="check-circle"></i>
+                <span>${message}</span>
+            </div>
+        `;
         
-        // Set initial opacity for fade-in effect
-        img.style.opacity = '0';
-        img.style.transition = 'opacity 0.5s ease';
-    });
+        // Add styles
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        `;
+
+        document.body.appendChild(notification);
+
+        // Animate in
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+
+        // Update feather icons
+        feather.replace();
+    }
+
+    // Update feather icons
+    feather.replace();
 });

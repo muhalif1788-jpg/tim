@@ -18,10 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('scroll', function() {
         const header = document.querySelector('.header');
         if (window.scrollY > 100) {
-            header.style.background = 'rgba(139, 69, 19, 0.95)';
+            header.style.background = '#294066)';
             header.style.backdropFilter = 'blur(10px)';
         } else {
-            header.style.background = '#8B4513';
+            header.style.background = '#294066';
             header.style.backdropFilter = 'none';
         }
     });
