@@ -1,20 +1,29 @@
 <?php
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DetailTransaksiController;
-use App\Http\Controllers\Admin\ProdukController;
+use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
 use App\Http\Controllers\Admin\KategoriController;
 use App\Http\Controllers\Admin\TransaksiController;
-use App\Http\Controllers\HomeController;        
+use App\Http\Controllers\Customer\ProductsController as CustomerProdukController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CartController;        
 use Illuminate\Support\Facades\Route;
 
+// ==================== AUTH ROUTES - HARUS PALING ATAS ====================
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
 // ==================== CUSTOMER ROUTES ====================
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/products', [ProdukController::class, 'publicIndex'])->name('products.index');
-Route::get('/products/{id}', [ProdukController::class, 'publicShow'])->name('products.show');
-Route::get('/category/{id}', [KategoriController::class, 'publicShow'])->name('category.show');
+Route::get('/products', [CustomerProdukController::class, 'index'])->name('products.index');
+Route::get('/products/{id}', [CustomerProdukController::class, 'show'])->name('products.show');
+Route::get('/products/search', [CustomerProdukController::class, 'search'])->name('products.search');
+
 
 // Cart Routes
 Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
@@ -23,10 +32,7 @@ Route::post('/cart/update', [CartController::class, 'update'])->name('cart.updat
 Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
 Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
-// Authentication routes
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
 
 // ==================== ADMIN ROUTES ====================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -42,12 +48,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/kategori/{kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
     
     // Produk Routes
-    Route::get('/produk', [ProdukController::class, 'index'])->name('produk.index');
-    Route::get('/produk/create', [ProdukController::class, 'create'])->name('produk.create');
-    Route::post('/produk', [ProdukController::class, 'store'])->name('produk.store');
-    Route::get('/produk/{produk}/edit', [ProdukController::class, 'edit'])->name('produk.edit');
-    Route::put('/produk/{produk}', [ProdukController::class, 'update'])->name('produk.update');
-    Route::delete('/produk/{produk}', [ProdukController::class, 'destroy'])->name('produk.destroy');
+    Route::get('/produk', [AdminProdukController::class, 'index'])->name('produk.index');
+    Route::get('/produk/create', [AdminProdukController::class, 'create'])->name('produk.create');
+    Route::post('/produk', [AdminProdukController::class, 'store'])->name('produk.store');
+    Route::get('/produk/{produk}/edit', [AdminProdukController::class, 'edit'])->name('produk.edit');
+    Route::put('/produk/{produk}', [AdminProdukController::class, 'update'])->name('produk.update');
+    Route::delete('/produk/{produk}', [AdminProdukController::class, 'destroy'])->name('produk.destroy');
     
     // Transaksi Routes
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');

@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Produk;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 
 class ProdukController extends Controller
 {
     public function index()
     {
-        // Ambil semua produk beserta kategori (relasi)
+        // Ambil semua produk (termasuk non-aktif & stok 0)
         $produks = Produk::with('kategori')->get();
         $kategoris = Kategori::all();
         return view('admin.produk.index', compact('produks','kategoris'));
@@ -19,35 +20,47 @@ class ProdukController extends Controller
 
     public function create()
     {
-        // Ambil kategori untuk dropdown form tambah
         $kategoris = Kategori::all();
-        return view('admin.produk.create', compact('kategori'));
+        return view('admin.produk.create', compact('kategoris')); // ✅ Fixed: 'kategoris'
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'nama_produk' => 'required|string|max:50',
+            'nama_produk' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'harga' => 'required|numeric|min:0',
             'stok' => 'required|integer|min:0',
-            'id_kategori' => 'required|exists:kategori,id_kategori',
+            'berat' => 'required|integer|min:0',
+            'satuan' => 'required|string',
+            'kategori_id' => 'required|exists:kategori,id', // ✅ Fixed: 'kategori_id'
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => 'boolean'
         ]);
+
+        // Handle gambar upload
+        $gambarPath = null;
+        if ($request->hasFile('gambar')) {
+            $gambarPath = $request->file('gambar')->store('produk', 'public');
+        }
 
         Produk::create([
             'nama_produk' => $request->nama_produk,
             'deskripsi' => $request->deskripsi,
             'harga' => $request->harga,
             'stok' => $request->stok,
-            'id_kategori' => $request->id_kategori,
+            'berat' => $request->berat,
+            'satuan' => $request->satuan,
+            'kategori_id' => $request->kategori_id, // ✅ Fixed: 'kategori_id'
+            'gambar' => $gambarPath,
+            'status' => $request->boolean('status')
         ]);
 
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil ditambahkan');
+        return redirect()->route('admin.produk.index')->with('success', 'Produk berhasil ditambahkan');
     }
 
     public function edit(Produk $produk)
     {
-        // Ambil semua kategori untuk dropdown form edit
         $kategoris = Kategori::all();
         return view('admin.produk.edit', compact('produk', 'kategoris'));
     }
@@ -55,27 +68,50 @@ class ProdukController extends Controller
     public function update(Request $request, Produk $produk)
     {
         $request->validate([
-            'nama_produk' => 'required|string|max:50',
+            'nama_produk' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'harga' => 'required|numeric|min:0',
             'stok' => 'required|integer|min:0',
-            'id_kategori' => 'required|exists:kategori,id_kategori',
+            'berat' => 'required|integer|min:0',
+            'satuan' => 'required|string',
+            'kategori_id' => 'required|exists:kategori,id', // ✅ Fixed: 'kategori_id'
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => 'boolean'
         ]);
 
-        $produk->update([
+        $data = [
             'nama_produk' => $request->nama_produk,
             'deskripsi' => $request->deskripsi,
             'harga' => $request->harga,
             'stok' => $request->stok,
-            'id_kategori' => $request->id_kategori,
-        ]);
+            'berat' => $request->berat,
+            'satuan' => $request->satuan,
+            'kategori_id' => $request->kategori_id, // ✅ Fixed: 'kategori_id'
+            'status' => $request->boolean('status')
+        ];
 
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil diupdate');
+        // Handle gambar update
+        if ($request->hasFile('gambar')) {
+            // Delete old image if exists
+            if ($produk->gambar) {
+                Storage::disk('public')->delete($produk->gambar);
+            }
+            $data['gambar'] = $request->file('gambar')->store('produk', 'public');
+        }
+
+        $produk->update($data);
+
+        return redirect()->route('admin.produk.index')->with('success', 'Produk berhasil diupdate');
     }
 
     public function destroy(Produk $produk)
     {
+        // Delete image if exists
+        if ($produk->gambar) {
+            Storage::disk('public')->delete($produk->gambar);
+        }
+
         $produk->delete();
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil dihapus');
+        return redirect()->route('admin.produk.index')->with('success', 'Produk berhasil dihapus');
     }
 }
