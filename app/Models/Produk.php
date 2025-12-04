@@ -13,24 +13,25 @@ class Produk extends Model
     protected $primaryKey = 'id';
     public $timestamps = true;
 
-    // ✅ SEMUA FIELD BARU
     protected $fillable = [
+        'kategori_id',
         'nama_produk',
-        'deskripsi',      // ✅ BARU
-        'gambar',         // ✅ BARU  
+        'deskripsi',
+        'gambar',
         'harga',
         'stok',
-        'berat',          // ✅ BARU
-        'status',         // ✅ BARU
-        'satuan',         // ✅ BARU
-        'kategori_id'  
+        'berat',
+        'status',
+        'satuan'
     ];
 
     protected $casts = [
         'harga' => 'integer',
         'stok' => 'integer',
-        'berat' => 'integer',  // ✅ BARU
-        'status' => 'boolean'  // ✅ BARU
+        'berat' => 'integer',
+        'status' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
     // Relasi ke kategori
@@ -39,37 +40,36 @@ class Produk extends Model
         return $this->belongsTo(Kategori::class, 'kategori_id');
     }
 
-    // ✅ ACCESSOR BARU
-    public function getDeskripsiPendekAttribute()
-    {
-        if (empty($this->deskripsi)) {
-            return 'Deskripsi tidak tersedia';
-        }
-        return strlen($this->deskripsi) > 100 
-            ? substr($this->deskripsi, 0, 100) . '...' 
-            : $this->deskripsi;
-    }
-
-    public function getGambarUrlAttribute()
-    {
-        if ($this->gambar) {
-            return asset('storage/produk/' . $this->gambar);
-        }
-        return asset('images/default-product.jpg');
-    }
-
-    public function getBeratKgAttribute()
-    {
-        return $this->berat / 1000;
-    }
-
-    public function getHargaFormatAttribute()
+    // Accessor untuk harga format Rupiah
+    public function getHargaRpAttribute()
     {
         return 'Rp ' . number_format($this->harga, 0, ',', '.');
     }
 
-    public function getIsAvailableAttribute()
+    // Accessor untuk status text
+    public function getStatusTextAttribute()
     {
-        return $this->status && $this->stok > 0;
+        return $this->status ? 'Aktif' : 'Nonaktif';
+    }
+
+    // Accessor untuk status badge
+    public function getStatusBadgeAttribute()
+    {
+        if ($this->status) {
+            return '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>';
+        }
+        return '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Nonaktif</span>';
+    }
+
+    // Scope untuk produk aktif
+    public function scopeActive($query)
+    {
+        return $query->where('status', true);
+    }
+
+    // Scope untuk produk berdasarkan kategori
+    public function scopeByKategori($query, $kategori_id)
+    {
+        return $query->where('kategori_id', $kategori_id);
     }
 }

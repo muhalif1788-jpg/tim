@@ -9,14 +9,14 @@ class Kategori extends Model
 {
     use HasFactory;
 
-    protected $table = 'kategori'; 
+    protected $table = 'kategori';
 
-    protected $primaryKey = 'id';   // ini sesuai migration → $table->id();
-    public $timestamps = true;      // migration pakai timestamps()
+    protected $primaryKey = 'id';
+    public $timestamps = true;
 
     protected $fillable = [
         'nama_kategori',
-        'deskripsi'
+        // HAPUS 'deskripsi'
     ];
 
     public function produks()

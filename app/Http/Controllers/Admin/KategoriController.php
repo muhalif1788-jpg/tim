@@ -6,7 +6,8 @@ use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
-class KategoriController extends Controller{
+class KategoriController extends Controller
+{
     public function index()
     {
         $kategoris = Kategori::all();
@@ -22,14 +23,15 @@ class KategoriController extends Controller{
     {
         $request->validate([
             'nama_kategori' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string'
+            // HAPUS validasi deskripsi
         ]);
 
         Kategori::create([
             'nama_kategori' => $request->nama_kategori,
+            // HAPUS deskripsi
         ]);
 
-        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil ditambahkan');
+        return redirect()->route('admin.kategori.index')->with('success', 'Kategori berhasil ditambahkan');
     }
 
     public function edit(Kategori $kategori)
@@ -41,18 +43,20 @@ class KategoriController extends Controller{
     {
         $request->validate([
             'nama_kategori' => 'required|string|max:255',
+            // HAPUS validasi deskripsi
         ]);
 
         $kategori->update([
             'nama_kategori' => $request->nama_kategori,
+            // HAPUS deskripsi
         ]);
 
-        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil diupdate');
+        return redirect()->route('admin.kategori.index')->with('success', 'Kategori berhasil diupdate');
     }
 
     public function destroy(Kategori $kategori)
     {
         $kategori->delete();
-        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil dihapus');
+        return redirect()->route('admin.kategori.index')->with('success', 'Kategori berhasil dihapus');
     }
 }

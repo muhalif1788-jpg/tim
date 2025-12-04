@@ -51,6 +51,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/produk', [AdminProdukController::class, 'index'])->name('produk.index');
     Route::get('/produk/create', [AdminProdukController::class, 'create'])->name('produk.create');
     Route::post('/produk', [AdminProdukController::class, 'store'])->name('produk.store');
+    Route::get('/produk/{produk}', [AdminProdukController::class, 'show'])->name('produk.show');
     Route::get('/produk/{produk}/edit', [AdminProdukController::class, 'edit'])->name('produk.edit');
     Route::put('/produk/{produk}', [AdminProdukController::class, 'update'])->name('produk.update');
     Route::delete('/produk/{produk}', [AdminProdukController::class, 'destroy'])->name('produk.destroy');
@@ -65,6 +66,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/user', [UserController::class, 'index'])->name('user.index');
     Route::get('/user/create', [UserController::class, 'create'])->name('user.create');
     Route::post('/user', [UserController::class, 'store'])->name('user.store');
+    Route::get('/user/{user}', [UserController::class, 'show'])->name('user.show');
     Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
     Route::put('/user/{user}', [UserController::class, 'update'])->name('user.update');
     Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('user.destroy');

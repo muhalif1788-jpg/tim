@@ -35,13 +35,9 @@
             <form action="{{ route('admin.kategori.store') }}" method="POST">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                    <div>
+                    <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kategori</label>
-                        <input type="text" name="nama" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Masukkan nama kategori" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                        <input type="text" name="deskripsi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Deskripsi kategori (opsional)">
+                        <input type="text" name="nama_kategori" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Masukkan nama kategori" required>
                     </div>
                     <div class="flex space-x-2">
                         <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
@@ -63,7 +59,6 @@
                     <tr>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">ID</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Nama Kategori</th>
-                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Deskripsi</th>
                         <th class="px-4 py-3 text-center text-sm font-semibold text-gray-600">Aksi</th>
                     </tr>
                 </thead>
@@ -74,23 +69,12 @@
                         
                         <!-- Kolom Nama -->
                         <td class="px-4 py-3">
-                            <span class="nama-text font-medium text-gray-900">{{ $kategori->nama }}</span>
+                            <span class="nama-text font-medium text-gray-900">{{ $kategori->nama_kategori }}</span>
                             <form action="{{ route('admin.kategori.update', $kategori) }}" method="POST" class="form-inline-edit hidden">
                                 @csrf
                                 @method('PUT')
-                                <input type="text" name="nama" value="{{ $kategori->nama }}" 
+                                <input type="text" name="nama_kategori" value="{{ $kategori->nama_kategori }}" 
                                        class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-red-500" required>
-                            </form>
-                        </td>
-                        
-                        <!-- Kolom Deskripsi -->
-                        <td class="px-4 py-3">
-                            <span class="deskripsi-text text-gray-600">{{ $kategori->deskripsi ?? '-' }}</span>
-                            <form action="{{ route('admin.kategori.update', $kategori) }}" method="POST" class="form-inline-edit-deskripsi hidden">
-                                @csrf
-                                @method('PUT')
-                                <input type="text" name="deskripsi" value="{{ $kategori->deskripsi }}" 
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-red-500">
                             </form>
                         </td>
 
@@ -125,7 +109,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="3" class="px-4 py-8 text-center text-gray-500">
                             <i class="fas fa-tags text-3xl mb-2 block text-gray-300"></i>
                             Belum ada kategori.
                         </td>
@@ -159,9 +143,9 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             const tr = this.closest('tr');
             
-            // Hide text, show forms
-            tr.querySelectorAll('.nama-text, .deskripsi-text').forEach(el => el.classList.add('hidden'));
-            tr.querySelectorAll('.form-inline-edit, .form-inline-edit-deskripsi').forEach(el => el.classList.remove('hidden'));
+            // Hide text, show form
+            tr.querySelector('.nama-text').classList.add('hidden');
+            tr.querySelector('.form-inline-edit').classList.remove('hidden');
             
             // Switch buttons
             tr.querySelector('.action-view').classList.add('hidden');
@@ -173,12 +157,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-simpan-edit').forEach(btn => {
         btn.addEventListener('click', function() {
             const tr = this.closest('tr');
-            
-            // Submit semua form yang sedang aktif
-            const activeForms = tr.querySelectorAll('.form-inline-edit:not(.hidden), .form-inline-edit-deskripsi:not(.hidden)');
-            activeForms.forEach(form => {
-                form.submit();
-            });
+            const form = tr.querySelector('.form-inline-edit');
+            form.submit();
         });
     });
 
@@ -187,9 +167,9 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             const tr = this.closest('tr');
             
-            // Show text, hide forms
-            tr.querySelectorAll('.nama-text, .deskripsi-text').forEach(el => el.classList.remove('hidden'));
-            tr.querySelectorAll('.form-inline-edit, .form-inline-edit-deskripsi').forEach(el => el.classList.add('hidden'));
+            // Show text, hide form
+            tr.querySelector('.nama-text').classList.remove('hidden');
+            tr.querySelector('.form-inline-edit').classList.add('hidden');
             
             // Switch buttons
             tr.querySelector('.action-view').classList.remove('hidden');

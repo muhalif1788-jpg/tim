@@ -5,58 +5,78 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Produk;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
 
 class ProdukController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil semua produk (termasuk non-aktif & stok 0)
-        $produks = Produk::with('kategori')->get();
+        $search = $request->input('search');
+        $kategori_id = $request->input('kategori_id');
+        $status = $request->input('status');
+        
+        $produks = Produk::with('kategori')
+                    ->when($search, function($query) use ($search) {
+                        return $query->where('nama_produk', 'like', "%{$search}%")
+                                    ->orWhere('deskripsi', 'like', "%{$search}%");
+                    })
+                    ->when($kategori_id, function($query) use ($kategori_id) {
+                        return $query->where('kategori_id', $kategori_id);
+                    })
+                    ->when($status !== null, function($query) use ($status) {
+                        return $query->where('status', $status);
+                    })
+                    ->latest()
+                    ->paginate(10);
+        
         $kategoris = Kategori::all();
-        return view('admin.produk.index', compact('produks','kategoris'));
+        
+        return view('admin.produk.index', compact('produks', 'kategoris', 'search', 'kategori_id', 'status'));
     }
 
     public function create()
     {
         $kategoris = Kategori::all();
-        return view('admin.produk.create', compact('kategoris')); // ✅ Fixed: 'kategoris'
+        return view('admin.produk.create', compact('kategoris'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'nama_produk' => 'required|string|max:255',
+            'kategori_id' => 'required|exists:kategori,id',
             'deskripsi' => 'nullable|string',
-            'harga' => 'required|numeric|min:0',
-            'stok' => 'required|integer|min:0',
-            'berat' => 'required|integer|min:0',
-            'satuan' => 'required|string',
-            'kategori_id' => 'required|exists:kategori,id', // ✅ Fixed: 'kategori_id'
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'boolean'
+            'harga' => 'required|integer|min:0',
+            'stok' => 'required|integer|min:0',
+            'berat' => 'nullable|integer|min:0',
+            'status' => 'boolean',
+            'satuan' => 'nullable|string|max:20'
         ]);
 
-        // Handle gambar upload
-        $gambarPath = null;
+        $data = $request->only([
+            'nama_produk', 'kategori_id', 'deskripsi', 
+            'harga', 'stok', 'berat', 'status', 'satuan'
+        ]);
+
+        // Default value untuk status
+        $data['status'] = $request->has('status') ? true : false;
+
+        // Handle upload gambar
         if ($request->hasFile('gambar')) {
             $gambarPath = $request->file('gambar')->store('produk', 'public');
+            $data['gambar'] = $gambarPath;
         }
 
-        Produk::create([
-            'nama_produk' => $request->nama_produk,
-            'deskripsi' => $request->deskripsi,
-            'harga' => $request->harga,
-            'stok' => $request->stok,
-            'berat' => $request->berat,
-            'satuan' => $request->satuan,
-            'kategori_id' => $request->kategori_id, // ✅ Fixed: 'kategori_id'
-            'gambar' => $gambarPath,
-            'status' => $request->boolean('status')
-        ]);
+        Produk::create($data);
 
         return redirect()->route('admin.produk.index')->with('success', 'Produk berhasil ditambahkan');
+    }
+
+    public function show(Produk $produk)
+    {
+        return view('admin.produk.show', compact('produk'));
     }
 
     public function edit(Produk $produk)
@@ -69,34 +89,33 @@ class ProdukController extends Controller
     {
         $request->validate([
             'nama_produk' => 'required|string|max:255',
+            'kategori_id' => 'required|exists:kategori,id',
             'deskripsi' => 'nullable|string',
-            'harga' => 'required|numeric|min:0',
-            'stok' => 'required|integer|min:0',
-            'berat' => 'required|integer|min:0',
-            'satuan' => 'required|string',
-            'kategori_id' => 'required|exists:kategori,id', // ✅ Fixed: 'kategori_id'
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'boolean'
+            'harga' => 'required|integer|min:0',
+            'stok' => 'required|integer|min:0',
+            'berat' => 'nullable|integer|min:0',
+            'status' => 'boolean',
+            'satuan' => 'nullable|string|max:20'
         ]);
 
-        $data = [
-            'nama_produk' => $request->nama_produk,
-            'deskripsi' => $request->deskripsi,
-            'harga' => $request->harga,
-            'stok' => $request->stok,
-            'berat' => $request->berat,
-            'satuan' => $request->satuan,
-            'kategori_id' => $request->kategori_id, // ✅ Fixed: 'kategori_id'
-            'status' => $request->boolean('status')
-        ];
+        $data = $request->only([
+            'nama_produk', 'kategori_id', 'deskripsi',
+            'harga', 'stok', 'berat', 'satuan'
+        ]);
 
-        // Handle gambar update
+        // Status
+        $data['status'] = $request->has('status') ? true : false;
+
+        // Handle upload gambar baru
         if ($request->hasFile('gambar')) {
-            // Delete old image if exists
+            // Hapus gambar lama jika ada
             if ($produk->gambar) {
                 Storage::disk('public')->delete($produk->gambar);
             }
-            $data['gambar'] = $request->file('gambar')->store('produk', 'public');
+            
+            $gambarPath = $request->file('gambar')->store('produk', 'public');
+            $data['gambar'] = $gambarPath;
         }
 
         $produk->update($data);
@@ -106,7 +125,7 @@ class ProdukController extends Controller
 
     public function destroy(Produk $produk)
     {
-        // Delete image if exists
+        // Hapus gambar jika ada
         if ($produk->gambar) {
             Storage::disk('public')->delete($produk->gambar);
         }
