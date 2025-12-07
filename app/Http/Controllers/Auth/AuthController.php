@@ -1,12 +1,12 @@
 <?php
-// app/Http/Controllers/Auth/LoginController.php
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Hash;
-use Illuminate\Foundation\Auth\User;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
@@ -39,12 +39,12 @@ class AuthController extends Controller
         ])->onlyInput('email');
     }
 
-     public function showRegisterForm()
+    public function showRegisterForm()
     {
         return view('auth.register');
     }
 
-        public function register(Request $request)
+    public function register(Request $request)
     {
         // 1. Validasi input
         $request->validate([
@@ -55,22 +55,22 @@ class AuthController extends Controller
             'address' => 'nullable|string|max:500',
         ]);
 
-        // 2. Create user
-        $users = User::create([
+        // 2. Create user dengan role customer
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'address' => $request->address,
+            'role' => 'customer', // ✅ EKSPLISIT: Set role sebagai customer
         ]);
 
         // 3. Auto login setelah registrasi
-        Auth::login($users);
+        Auth::login($user);
 
         // 4. Redirect ke home dengan pesan sukses
         return redirect('/')->with('success', 'Registrasi berhasil! Selamat datang di Kedai Pesisir.');
     }
-
 
     public function logout(Request $request)
     {

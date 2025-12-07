@@ -53,7 +53,7 @@ class ProductsController extends Controller
         $produk = $query->paginate(12);
         $kategoris = Kategori::all();
 
-        return view('customer.products', compact('produk', 'kategoris'));
+        return view('products.index', compact('produk', 'kategoris'));
     }
 
     /**
@@ -75,7 +75,7 @@ class ProductsController extends Controller
             ->limit(4)
             ->get();
 
-        return view('customer.products', compact('produk', 'relatedProducts'));
+        return view('products.show', compact('produk', 'relatedProducts'));
     }
 
     /**
@@ -96,6 +96,6 @@ class ProductsController extends Controller
 
         $kategoris = Kategori::all();
 
-        return view('customer.products', compact('produk', 'kategoris', 'query'));
+        return view('products.search', compact('produk', 'kategoris', 'query'));
     }
 }

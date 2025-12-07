@@ -29,13 +29,33 @@
                     
                     <!-- Auth Logic untuk Produk Link -->
                     @auth
-                        <li><a href="{{ route('products.index') }}" class="nav-link">Produk</a></li>
+                        <li><a href="{{ route('customer.products.index') }}" class="nav-link">Produk</a></li>
                     @else
                         <li><a href="#produk" class="nav-link">Produk</a></li>
                     @endauth
                     
+
+                    
                     <li><a href="#tentang" class="nav-link">Tentang Kami</a></li>
                     <li><a href="#kontak" class="nav-link">Kontak</a></li>
+
+                                        <!-- Navbar Keranjang -->
+                    @auth
+                        <li><a href="{{ route('cart.index') }}" class="nav-link">
+                            <i data-feather="shopping-cart"></i>
+                            Keranjang
+                            @if(isset($cartCount) && $cartCount > 0)
+                                <span class="cart-badge">{{ $cartCount }}</span>
+                            @endif
+                        </a></li>
+                    @else
+                        <li>
+                            <button class="nav-link-btn" onclick="showLoginAlert('mengakses keranjang')">
+                                <i data-feather="shopping-cart"></i>
+                                Keranjang
+                            </button>
+                        </li>
+                    @endauth
                     
                     <!-- Auth Logic untuk Login/Logout -->
                     @auth
@@ -82,7 +102,7 @@
                 
                 <!-- Auth Logic untuk Tombol Lihat Produk -->
                 @auth
-                    <a href="{{ route('products.index') }}" class="btn btn-secondary">Lihat Produk</a>
+                    <a href="{{ route('customer.products.index') }}" class="btn btn-secondary">Lihat Produk</a>
                 @else
                     <button class="btn btn-secondary" onclick="showLoginAlert('lihat produk')">Lihat Produk</button>
                 @endauth
@@ -92,80 +112,47 @@
 </section>
 
 <!-- Products Section -->
-<section class="products" id="produk">
+<section class="produk" id="produk">
     <div class="container">
         <h2 class="section-title">Produk Kami</h2>
-        <div class="products-grid">
-            <!-- Product 1 -->
-            <div class="product-card">
-                <div class="product-image">
-                    <img src="{{ asset('images/product1.jpg') }}" alt="Abon Sapi Original">
-                </div>
-                <div class="product-info">
-                    <h3>Abon Sapi Original</h3>
-                    <p class="product-price">Rp 45.000</p>
-                    
-                    <!-- Auth Logic untuk Tombol Beli -->
-                    @auth
-                        <button class="btn btn-small" onclick="handleOrder()">Beli Sekarang</button>
-                    @else
-                        <button class="btn btn-small" onclick="showLoginAlert('membeli produk ini')">Beli Sekarang</button>
-                    @endauth
-                </div>
-            </div>
-            
-            <!-- Product 2 -->
-            <div class="product-card">
-                <div class="product-image">
-                    <img src="{{ asset('images/product2.jpg') }}" alt="Abon Sapi Pedas">
-                </div>
-                <div class="product-info">
-                    <h3>Abon Sapi Pedas</h3>
-                    <p class="product-price">Rp 48.000</p>
-                    
-                    @auth
-                        <button class="btn btn-small" onclick="handleOrder()">Beli Sekarang</button>
-                    @else
-                        <button class="btn btn-small" onclick="showLoginAlert('membeli produk ini')">Beli Sekarang</button>
-                    @endauth
-                </div>
-            </div>
-            
-            <!-- Product 3 -->
-            <div class="product-card">
-                <div class="product-image">
-                    <img src="{{ asset('images/product3.jpg') }}" alt="Abon Sapi Balado">
-                </div>
-                <div class="product-info">
-                    <h3>Abon Sapi Balado</h3>
-                    <p class="product-price">Rp 50.000</p>
-                    
-                    @auth
-                        <button class="btn btn-small" onclick="handleOrder()">Beli Sekarang</button>
-                    @else
-                        <button class="btn btn-small" onclick="showLoginAlert('membeli produk ini')">Beli Sekarang</button>
-                    @endauth
-                </div>
-            </div>    
-        </div>
         
-        <!-- Link Selengkapnya dengan Logic Auth -->
-        <div class="section-more">
-            @auth
-                <!-- Jika sudah login -> Link ke halaman produk -->
-                <a href="{{ route('products.index') }}" class="more-link">
-                    Selengkapnya <span class="arrow">→</span>
-                </a>
-            @else
-                <!-- Jika belum login -> Link ke login -->
-                <button class="more-link-btn" onclick="showLoginAlert('melihat semua produk')">
-                    Selengkapnya <span class="arrow">→</span>
-                </button>
-            @endauth
-        </div>
+        @if($produk->isEmpty())
+            <div class="no-products">
+                <p>Belum ada produk tersedia saat ini.</p>
+            </div>
+        @else
+            <div class="products-grid">
+                @foreach($produk as $product)
+                <div class="product-card">
+                    <div class="product-image">
+                        @if($product->gambar)  <!-- GAMBAR bukan image -->
+                            <img src="{{ asset('storage/' . $product->gambar) }}" alt="{{ $product->nama_produk }}">
+                        @else
+                            <img src="{{ asset('images/default-product.jpg') }}" alt="{{ $product->nama_produk }}">
+                        @endif
+                    </div>
+                    <div class="product-info">
+                        <h3>{{ $product->nama_produk }}</h3>  <!-- NAMA_PRODUK bukan name -->
+                        <p class="product-price">Rp {{ number_format($product->harga, 0, ',', '.') }}</p>
+                        
+                        @if($product->stok > 0)  <!-- STOK bukan stock -->
+                            @auth
+                                <button class="btn btn-small" onclick="handleOrder()">Beli Sekarang</button>
+                            @else
+                                <button class="btn btn-small" onclick="showLoginAlert('membeli {{ $product->nama_produk }}')">
+                                    Beli Sekarang
+                                </button>
+                            @endauth
+                        @else
+                            <button class="btn btn-small btn-disabled" disabled>Stok Habis</button>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        @endif
     </div>
 </section>
-
 <!-- Why Kedai Pesisir Section -->
 <section class="why-section" id="tentang">
     <div class="container">

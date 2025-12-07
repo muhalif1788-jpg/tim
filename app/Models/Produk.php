@@ -72,4 +72,9 @@ class Produk extends Model
     {
         return $query->where('kategori_id', $kategori_id);
     }
+
+    public function carts()
+    {
+    return $this->hasMany(Cart::class, 'id');
+    }
 }

@@ -7,8 +7,9 @@ use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
 use App\Http\Controllers\Admin\KategoriController;
 use App\Http\Controllers\Admin\TransaksiController;
 use App\Http\Controllers\Customer\ProductsController as CustomerProdukController;
+use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\CheckoutController;  
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\CartController;        
 use Illuminate\Support\Facades\Route;
 
 // ==================== AUTH ROUTES - HARUS PALING ATAS ====================
@@ -18,20 +19,24 @@ Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('regi
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// ==================== CUSTOMER ROUTES ====================
-Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/products', [CustomerProdukController::class, 'index'])->name('products.index');
-Route::get('/products/{id}', [CustomerProdukController::class, 'show'])->name('products.show');
-Route::get('/products/search', [CustomerProdukController::class, 'search'])->name('products.search');
+// routes/web.php
+Route::get('/', [HomeController::class, 'index'])->name('app');
 
+// ==================== CUSTOMER ROUTES ====================
+Route::get('/products', [CustomerProdukController::class, 'index'])->name('customer.products.index');
+Route::get('/products/{id}', [CustomerProdukController::class, 'show'])->name('customer.products.show');
+Route::get('/products/search', [CustomerProdukController::class, 'search'])->name('customer.products.search');
 
 // Cart Routes
-Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+Route::post('/cart/store', [CartController::class, 'store'])->name('cart.store');
+Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
 Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::get('/invoice/{invoiceNumber}', [CheckoutController::class, 'invoice'])->name('checkout.invoice');
 
 
 // ==================== ADMIN ROUTES ====================

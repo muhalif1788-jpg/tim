@@ -106,6 +106,38 @@ body {
     margin-left: 1rem;
 }
 
+/* Style untuk tombol keranjang di navbar */
+.nav-link-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.nav-link-btn:hover {
+    opacity: 0.8;
+}
+
+/* Style untuk badge keranjang */
+.cart-badge {
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 5px;
+}
+
 .btn-login {
     display: flex;
     align-items: center;
@@ -240,14 +272,12 @@ body {
 }
 
 .btn-secondary {
-    background: transparent;
-    color: #FFD700;
-    border: 2px solid #FFD700;
+    background: #FFD700;
+    color: #294066;
 }
 
 .btn-secondary:hover {
-    background: #FFD700;
-    color: #294066;
+    background: #FFC400;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
 }
