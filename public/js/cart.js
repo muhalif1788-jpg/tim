@@ -120,6 +120,7 @@ class CartManager {
                 document.getElementById('clear-form').submit();
             }
         });
+        return false;
     }
 
     // Validate cart before checkout

@@ -127,7 +127,7 @@
                 </a>
 
                 <div class="pt-4 mt-4 border-t border-gray-700">
-                    <a href="{{ route('home') }}" 
+                    <a href="{{ route('admin.dashboard') }}" 
                        class="flex items-center space-x-3 px-4 py-3 rounded-lg text-yellow-300 hover:bg-gray-700 transition-all duration-200">
                         <i class="fas fa-store w-5"></i>
                         <span>Kembali ke Toko</span>

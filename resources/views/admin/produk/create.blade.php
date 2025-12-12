@@ -110,7 +110,7 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                            accept="image/*">
                 </div>
-                <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, GIF. Maksimal 2MB</p>
+                <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, GIF. Maksimal 2GB</p>
                 @error('gambar')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror

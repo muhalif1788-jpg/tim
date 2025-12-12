@@ -30,9 +30,10 @@ Route::get('/products/search', [CustomerProdukController::class, 'search'])->nam
 // Cart Routes
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/store', [CartController::class, 'store'])->name('cart.store');
-Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
-Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+Route::put('/cart/update/{cart}', [CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
+Route::post('/cart/clear/', [CartController::class, 'clear'])->name('cart.clear');
+Route::get('/cart/count', [CartController::class, 'getCartCount'])->name('cart.count');
 
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');

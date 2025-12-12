@@ -47,7 +47,7 @@ class ProdukController extends Controller
             'nama_produk' => 'required|string|max:255',
             'kategori_id' => 'required|exists:kategori,id',
             'deskripsi' => 'nullable|string',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:20048',
             'harga' => 'required|integer|min:0',
             'stok' => 'required|integer|min:0',
             'berat' => 'nullable|integer|min:0',

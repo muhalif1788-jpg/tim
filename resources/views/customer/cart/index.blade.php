@@ -102,7 +102,6 @@
                         <h3 class="cart-header-title">Daftar Produk ({{ $total_items }})</h3>
                         <form action="{{ route('cart.clear') }}" method="POST" class="clear-form" id="clear-form">
                             @csrf
-                            @method('DELETE')
                             <button type="button" class="cart-clear-btn" onclick="confirmClearCart()">
                                 <i data-feather="trash-2"></i>
                                 Kosongkan Keranjang
@@ -159,7 +158,7 @@
                                         </div>
                                     </form>
                                     
-                                    <form action="{{ route('cart.remove', $cart->id) }}" method="POST" class="remove-form" id="remove-form-{{ $cart->id }}">
+                                    <form action="{{ route('cart.destroy', $cart->id) }}" method="POST" class="remove-form" id="remove-form-{{ $cart->id }}">
                                         @csrf
                                         @method('DELETE')
                                         <button type="button" class="btn-remove" onclick="confirmRemoveItem({{ $cart->id }})">
