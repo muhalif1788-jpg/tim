@@ -39,6 +39,10 @@ Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.in
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 Route::get('/invoice/{invoiceNumber}', [CheckoutController::class, 'invoice'])->name('checkout.invoice');
 
+Route::get('/tentang', function () {
+    return view('tentang-kami.index');
+})->name('tentang');
+
 
 // ==================== ADMIN ROUTES ====================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
