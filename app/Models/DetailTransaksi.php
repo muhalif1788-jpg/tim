@@ -2,33 +2,32 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class DetailTransaksi extends Model
 {
-    use HasFactory;
-
-    protected $table = 'detail_transaksi';
-    protected $primaryKey = 'id_detail';
-    public $timestamps = false;
-
+    protected $table = 'detail_transaksi'; // ⚠️ Nama tabel singular
+    
     protected $fillable = [
-        'id_transaksi',
-        'id_produk',
+        'transaksi_id',
+        'produk_id',
+        'harga_saat_ini',
         'jumlah',
-        'sub_total'
+        'subtotal',
     ];
 
-    // Relasi: setiap detail transaksi punya 1 produk
-    public function produk()
-    {
-        return $this->belongsTo(Produk::class, 'id_produk', 'id_produk');
-    }
+    protected $casts = [
+        'harga_saat_ini' => 'decimal:2',
+        'subtotal' => 'decimal:2',
+    ];
 
-    // Relasi: detail transaksi milik 1 transaksi
     public function transaksi()
     {
-        return $this->belongsTo(Transaksi::class, 'id_transaksi', 'id_transaksi');
+        return $this->belongsTo(Transaksi::class, 'transaksi_id');
+    }
+
+    public function produk()
+    {
+        return $this->belongsTo(Produk::class);
     }
 }

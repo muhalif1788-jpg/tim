@@ -137,12 +137,12 @@
                     <div class="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-md">
                         <i class="fas fa-utensils text-red-500 text-xl"></i>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900">Kedai Pasist</h3>
+                    <h3 class="text-2xl font-bold text-gray-900">Kedai Peisir</h3>
                 </div>
                 
                 <div class="text-center mb-8">
                     <p class="text-gray-700 leading-relaxed">
-                        Kedai Pasist menghadirkan abon yang tidak hanya lezat tetapi juga bergizi. 
+                        Kedai pesisi Abon UmmI menghadirkan abon yang tidak hanya lezat tetapi juga bergizi. 
                         Terbuat dari bahan-bahan pilihan terbaik, kami menghadirkan cita rasa autentik 
                         dan keseimbangan nutrisi di setiap sajian.
                     </p>

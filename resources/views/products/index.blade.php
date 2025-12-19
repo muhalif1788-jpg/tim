@@ -34,7 +34,7 @@
                             <li>
                                 <a href="{{ route('cart.index') }}" class="nav-link">
                                     <i data-feather="shopping-cart"></i>
-                                    Keranjang
+                                    
                                     @if($cartCount > 0)
                                         <span class="cart-badge">{{ $cartCount }}</span>
                                     @endif
@@ -44,7 +44,7 @@
                             <li>
                                 <a href="{{ route('login') }}" class="nav-link">
                                     <i data-feather="shopping-cart"></i>
-                                    Keranjang
+                                    
                                 </a>
                             </li>
                         @endauth

@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DetailTransaksiController;
 use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
 use App\Http\Controllers\Admin\KategoriController;
-use App\Http\Controllers\Admin\TransaksiController;
+use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Customer\ProductsController as CustomerProdukController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;  
@@ -35,9 +35,13 @@ Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.de
 Route::post('/cart/clear/', [CartController::class, 'clear'])->name('cart.clear');
 Route::get('/cart/count', [CartController::class, 'getCartCount'])->name('cart.count');
 
-Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-Route::get('/invoice/{invoiceNumber}', [CheckoutController::class, 'invoice'])->name('checkout.invoice');
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('customer.checkout.index');
+Route::post('/checkout', [CheckoutController::class, 'store'])->name('customer.checkout.store');
+Route::get('/checkout/payment', [CheckoutController::class, 'payment'])->name('customer.checkout.payment');
+Route::any('/checkout/finish/{orderId}', [CheckoutController::class, 'finish'])->name('customer.checkout.finish');
+Route::get('/checkout/error', [CheckoutController::class, 'error'])->name('customer.checkout.error');
+Route::get('/checkout/pending', [CheckoutController::class, 'pending'])->name('customer.checkout.pending');
+Route::get('/checkout/invoice/{orderId}', [CheckoutController::class, 'invoice'])->name('customer.checkout.invoice');
 
 Route::get('/tentang', function () {
     return view('tentang-kami.index');
@@ -67,10 +71,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/produk/{produk}', [AdminProdukController::class, 'destroy'])->name('produk.destroy');
     
     // Transaksi Routes
-    Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
-    Route::post('/transaksi', [TransaksiController::class, 'store'])->name('transaksi.store');
-    Route::get('/transaksi/{transaksi}', [TransaksiController::class, 'show'])->name('transaksi.show');
-    Route::delete('/transaksi/{transaksi}', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
+    Route::get('/transaksi', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::post('/transaksi', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::get('/transaksi/{transaksi}', [TransactionController::class, 'show'])->name('transactions.show');
+    Route::delete('/transaksi/{transaksi}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
+    Route::post('/transaksi/{transaksi}/update-status', [TransactionController::class, 'updateStatus'])->name('transactions.update-status');
     
     // User Routes
     Route::get('/user', [UserController::class, 'index'])->name('user.index');
@@ -87,5 +92,5 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/detail/{id_detail}', [DetailTransaksiController::class, 'destroy'])->name('detail.destroy');
 
     // Finalize Transaksi
-    Route::post('/transaksi/{transaksi}/finalize', [TransaksiController::class, 'finalize'])->name('transaksi.finalize');
+    Route::post('/transaksi/{transaksi}/finalize', [TransactionController::class, 'finalize'])->name('transaksi.finalize');
 });

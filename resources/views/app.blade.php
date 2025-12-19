@@ -52,7 +52,7 @@
                         <li>
                             <button class="nav-link-btn" onclick="showLoginAlert('mengakses keranjang')">
                                 <i data-feather="shopping-cart"></i>
-                                Keranjang
+                                
                             </button>
                         </li>
                     @endauth

@@ -1,104 +1,232 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice #{{ $invoiceData['nomor'] }}</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background: #f5f5f5; padding: 20px; }
-        .invoice { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #667eea; padding-bottom: 20px; }
-        .header h1 { color: #667eea; margin-bottom: 10px; }
-        .info { display: flex; justify-content: space-between; margin-bottom: 30px; }
-        .info div { flex: 1; }
-        .info-title { font-weight: bold; color: #555; margin-bottom: 5px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        th { background: #667eea; color: white; padding: 12px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #ddd; }
-        .total-row { font-weight: bold; font-size: 1.1em; }
-        .footer { text-align: center; margin-top: 40px; color: #666; font-size: 0.9em; }
-        .btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; }
-        @media print { .btn { display: none; } body { background: white; } }
-    </style>
-</head>
-<body>
-    <div class="invoice">
-        <div class="header">
-            <h1>INVOICE PEMBELIAN</h1>
-            <p>Kedai Pesisir - Abon Terbaik</p>
-            <p>No: {{ $invoiceData['nomor'] }} | Tanggal: {{ $invoiceData['tanggal'] }}</p>
-        </div>
-        
-        <div class="info">
-            <div>
-                <div class="info-title">Data Penerima:</div>
-                <p>{{ $invoiceData['nama_penerima'] }}</p>
-                <p>{{ $invoiceData['alamat'] }}</p>
-                <p>Telp: {{ $invoiceData['no_telepon'] }}</p>
-                @if($invoiceData['catatan'])
-                <p>Catatan: {{ $invoiceData['catatan'] }}</p>
-                @endif
+{{-- resources/views/customer/checkout/invoice.blade.php --}}
+@extends('layouts.app')
+
+@section('title', 'Invoice #' . $transaksi->order_id)
+
+@section('content')
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Invoice Card -->
+            <div class="card">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0">Invoice</h4>
+                            <p class="text-muted mb-0">#{{ $transaksi->order_id }}</p>
+                        </div>
+                        <div class="text-end">
+                            @php
+                                $statusColors = [
+                                    'pending' => 'warning',
+                                    'processing' => 'info',
+                                    'success' => 'success',
+                                    'failed' => 'danger',
+                                    'expired' => 'secondary',
+                                    'canceled' => 'dark',
+                                    'refunded' => 'secondary'
+                                ];
+                            @endphp
+                            <span class="badge bg-{{ $statusColors[$transaksi->status] ?? 'secondary' }} fs-6">
+                                {{ strtoupper($transaksi->status) }}
+                            </span>
+                            <p class="mb-0 mt-1 small text-muted">
+                                Tanggal: {{ $transaksi->created_at->format('d M Y H:i') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Company & Customer Info -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Dari:</h6>
+                            <address class="mb-0">
+                                <strong>{{ config('app.name', 'Toko Online') }}</strong><br>
+                                Alamat Toko<br>
+                                Kota, Provinsi<br>
+                                Telp: 021-12345678<br>
+                                Email: info@toko.com
+                            </address>
+                        </div>
+                        
+                        <div class="col-md-6 text-end">
+                            <h6>Untuk:</h6>
+                            <address class="mb-0">
+                                <strong>{{ $transaksi->nama_penerima }}</strong><br>
+                                {{ $transaksi->alamat_pengiriman }}<br>
+                                Telp: {{ $transaksi->telepon_penerima }}<br>
+                                Email: {{ $transaksi->user->email }}
+                            </address>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Details -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="45%">Produk</th>
+                                    <th width="15%" class="text-center">Harga</th>
+                                    <th width="10%" class="text-center">Qty</th>
+                                    <th width="15%" class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($transaksi->details as $index => $detail)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ $detail->produk->nama }}</strong><br>
+                                            <small class="text-muted">SKU: {{ $detail->produk->kode ?? '-' }}</small>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">Rp {{ number_format($detail->harga_saat_ini, 0, ',', '.') }}</td>
+                                    <td class="text-center">{{ $detail->jumlah }}</td>
+                                    <td class="text-end">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Payment & Shipping Info -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card border">
+                                <div class="card-body">
+                                    <h6>Informasi Pembayaran:</h6>
+                                    @if($transaksi->payment_type)
+                                    <p class="mb-1">
+                                        <strong>Metode:</strong> 
+                                        {{ ucfirst(str_replace('_', ' ', $transaksi->payment_type)) }}
+                                    </p>
+                                    @endif
+                                    @if($transaksi->bank)
+                                    <p class="mb-1">
+                                        <strong>Bank:</strong> {{ strtoupper($transaksi->bank) }}
+                                    </p>
+                                    @endif
+                                    @if($transaksi->va_number)
+                                    <p class="mb-1">
+                                        <strong>Virtual Account:</strong> {{ $transaksi->va_number }}
+                                    </p>
+                                    @endif
+                                    @if($transaksi->paid_at)
+                                    <p class="mb-0">
+                                        <strong>Tanggal Bayar:</strong> 
+                                        {{ $transaksi->paid_at->format('d M Y H:i') }}
+                                    </p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border">
+                                <div class="card-body">
+                                    <h6>Pengiriman:</h6>
+                                    <p class="mb-1">
+                                        <strong>Kurir:</strong> Standard Delivery
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Estimasi:</strong> 2-3 hari kerja
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong>Catatan:</strong> 
+                                        {{ $transaksi->catatan ?? 'Tidak ada catatan' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary -->
+                    <div class="row justify-content-end mt-4">
+                        <div class="col-md-5">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td class="text-end"><strong>Subtotal</strong></td>
+                                        <td class="text-end">Rp {{ number_format($transaksi->subtotal, 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-end"><strong>Biaya Pengiriman</strong></td>
+                                        <td class="text-end">Rp {{ number_format($transaksi->biaya_pengiriman, 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-end"><strong>Biaya Admin</strong></td>
+                                        <td class="text-end">Rp {{ number_format($transaksi->biaya_admin, 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr class="table-active">
+                                        <td class="text-end"><strong>TOTAL</strong></td>
+                                        <td class="text-end"><strong>Rp {{ number_format($transaksi->total_harga, 0, ',', '.') }}</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div class="alert alert-light mt-4">
+                        <h6>Catatan:</h6>
+                        <ul class="mb-0">
+                            <li>Invoice ini sah dan dikeluarkan oleh sistem</li>
+                            <li>Pembayaran yang sudah dilakukan tidak dapat dikembalikan</li>
+                            <li>Untuk pertanyaan, hubungi customer service kami</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Kembali ke Dashboard
+                        </a>
+                        
+                        <div>
+                            <button onclick="window.print()" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-print me-1"></i> Cetak Invoice
+                            </button>
+                            
+                            @if($transaksi->status == 'pending')
+                            <a href="{{ route('checkout.payment.retry', $transaksi->order_id) }}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-credit-card me-1"></i> Bayar Sekarang
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div>
-                <div class="info-title">Status:</div>
-                <p style="color: green; font-weight: bold;">PEMBAYARAN BERHASIL</p>
-                <p>Metode: Transfer Bank</p>
-            </div>
-        </div>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Produk</th>
-                    <th>Qty</th>
-                    <th>Harga</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($invoiceData['items'] as $item)
-                <tr>
-                    <td>{{ $item['nama'] }}</td>
-                    <td>{{ $item['quantity'] }}</td>
-                    <td>Rp {{ number_format($item['harga'], 0, ',', '.') }}</td>
-                    <td>Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="3" style="text-align: right; font-weight: bold;">Subtotal:</td>
-                    <td>Rp {{ number_format($invoiceData['subtotal'], 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td colspan="3" style="text-align: right;">Pengiriman:</td>
-                    <td>Rp {{ number_format($invoiceData['biaya_pengiriman'], 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td colspan="3" style="text-align: right;">Admin:</td>
-                    <td>Rp {{ number_format($invoiceData['biaya_admin'], 0, ',', '.') }}</td>
-                </tr>
-                <tr class="total-row">
-                    <td colspan="3" style="text-align: right;">TOTAL:</td>
-                    <td>Rp {{ number_format($invoiceData['total'], 0, ',', '.') }}</td>
-                </tr>
-            </tfoot>
-        </table>
-        
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h3 style="color: #667eea; margin-bottom: 10px;">Instruksi Pembayaran:</h3>
-            <p>1. Transfer ke BCA: 123-456-7890 (Kedai Pesisir)</p>
-            <p>2. Jumlah: <strong>Rp {{ number_format($invoiceData['total'], 0, ',', '.') }}</strong></p>
-            <p>3. Konfirmasi pembayaran via WhatsApp: 0812-3456-7890</p>
-        </div>
-        
-        <div class="footer">
-            <p>Terima kasih telah berbelanja di Kedai Pesisir!</p>
-            <p>Pesanan akan diproses dalam 1x24 jam setelah pembayaran dikonfirmasi.</p>
-            <a href="{{ route('customer.products.index') }}" class="btn">Kembali Berbelanja</a>
-            <button onclick="window.print()" class="btn">Cetak Invoice</button>
         </div>
     </div>
-</body>
-</html>
+</div>
+
+<style>
+@media print {
+    .btn, .card-footer, .alert {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    body {
+        padding: 0 !important;
+        background: white !important;
+    }
+}
+.card {
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border: none;
+}
+.table th {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+</style>
+@endsection

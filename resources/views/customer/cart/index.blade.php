@@ -30,7 +30,6 @@
                     <li><a href="{{ route('customer.products.index') }}" class="nav-link">Produk</a></li>
                     <li><a href="{{ route('cart.index') }}" class="nav-link active">
                         <i data-feather="shopping-cart"></i>
-                        Keranjang
                         @if($carts->count() > 0)
                             <span class="cart-badge" id="cart-count">{{ $total_items }}</span>
                         @endif
@@ -236,7 +235,7 @@
                         <span class="summary-value" id="total-display">Rp {{ number_format($grand_total, 0, ',', '.') }}</span>
                     </div>
                     
-                    <a href="{{ route('checkout.index') }}" class="btn btn-primary checkout-btn" onclick="return validateCart()">
+                    <a href="{{ route('customer.checkout.index') }}" class="btn btn-primary checkout-btn" onclick="return validateCart()">
                         <i data-feather="credit-card"></i>
                         Lanjut ke Pembayaran
                     </a>

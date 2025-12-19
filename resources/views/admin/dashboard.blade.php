@@ -70,7 +70,7 @@
             <i class="fas fa-tags text-xl mb-2 block"></i>
             <span class="font-medium">Tambah Kategori</span>
         </a>
-        <a href="{{ route('admin.transaksi.index') }}" class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg text-center transition-colors">
+        <a href="{{ route('admin.transactions.index') }}" class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg text-center transition-colors">
             <i class="fas fa-shopping-cart text-xl mb-2 block"></i>
             <span class="font-medium">Lihat Transaksi</span>
         </a>

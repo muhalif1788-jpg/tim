@@ -1,0 +1,4 @@
+DB_CONNECTION=sqlite
+DB_DATABASE=:memory:
+
+APP_KEY=base64:Osg4l25/AsgiXx8nuxQf4hbxx0cMzPjINZI/S+W6k1c=

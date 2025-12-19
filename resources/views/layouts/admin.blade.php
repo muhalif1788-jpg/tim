@@ -112,7 +112,7 @@
                     <span>Produk</span>
                 </a>
 
-                <a href="{{ route('admin.transaksi.index') }}"
+                <a href="{{ route('admin.transactions.index') }}"
                    class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 
                           {{ request()->is('admin/transaksi*') ? 'active' : '' }}">
                     <i class="fas fa-shopping-cart w-5"></i>
