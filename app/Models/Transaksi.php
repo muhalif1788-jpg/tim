@@ -41,6 +41,9 @@ class Transaksi extends Model
         'paid_at' => 'datetime',
         'expired_at' => 'datetime',
         'delivered_at' => 'datetime',
+        'nama_penerima' => 'encrypted',
+        'telepon_penerima' => 'encrypted',
+        'alamat_pengiriman' => 'encrypted',
     ];
 
     public function user()

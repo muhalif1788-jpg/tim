@@ -1,5 +1,5 @@
 {{-- resources/views/customer/checkout/invoice.blade.php --}}
-@extends('layouts.app')
+@extends('layouts.customer')
 
 @section('title', 'Invoice #' . $transaksi->order_id)
 

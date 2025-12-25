@@ -209,6 +209,17 @@ public function payment()
     }
 }
 
+// Di CheckoutController.php, tambah method:
+public function invoice($order_id)
+{
+    $transaksi = Transaksi::where('order_id', $order_id)
+        ->where('user_id', Auth::id())
+        ->with(['detailTransaksi.produk']) // Eager load
+        ->firstOrFail();
+    
+    return view('customer.checkout.invoice', compact('transaksi'));
+}
+
     public function finish($orderId)
     {
         $transaksi = Transaksi::where('order_id', $orderId)

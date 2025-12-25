@@ -18,30 +18,43 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])
+    ->name('password.request');
+
+// Kirim email reset password
+Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])
+    ->name('password.email');
+
+// Form reset password (dengan token)
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])
+    ->name('password.reset');
+
+// Proses reset password
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])
+    ->name('password.update');
 
 // routes/web.php
 Route::get('/', [HomeController::class, 'index'])->name('app');
-
-// ==================== CUSTOMER ROUTES ====================
 Route::get('/products', [CustomerProdukController::class, 'index'])->name('customer.products.index');
 Route::get('/products/{id}', [CustomerProdukController::class, 'show'])->name('customer.products.show');
 Route::get('/products/search', [CustomerProdukController::class, 'search'])->name('customer.products.search');
-
+Route::middleware(['auth', 'customer'])->group(function () {
 // Cart Routes
-Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/store', [CartController::class, 'store'])->name('cart.store');
-Route::put('/cart/update/{cart}', [CartController::class, 'update'])->name('cart.update');
-Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
-Route::post('/cart/clear/', [CartController::class, 'clear'])->name('cart.clear');
-Route::get('/cart/count', [CartController::class, 'getCartCount'])->name('cart.count');
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/store', [CartController::class, 'store'])->name('cart.store');
+    Route::put('/cart/update/{cart}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
+    Route::post('/cart/clear/', [CartController::class, 'clear'])->name('cart.clear');
+    Route::get('/cart/count', [CartController::class, 'getCartCount'])->name('cart.count');
 
-Route::get('/checkout', [CheckoutController::class, 'index'])->name('customer.checkout.index');
-Route::post('/checkout', [CheckoutController::class, 'store'])->name('customer.checkout.store');
-Route::get('/checkout/payment', [CheckoutController::class, 'payment'])->name('customer.checkout.payment');
-Route::any('/checkout/finish/{orderId}', [CheckoutController::class, 'finish'])->name('customer.checkout.finish');
-Route::get('/checkout/error', [CheckoutController::class, 'error'])->name('customer.checkout.error');
-Route::get('/checkout/pending', [CheckoutController::class, 'pending'])->name('customer.checkout.pending');
-Route::get('/checkout/invoice/{orderId}', [CheckoutController::class, 'invoice'])->name('customer.checkout.invoice');
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('customer.checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('customer.checkout.store');
+    Route::get('/checkout/payment', [CheckoutController::class, 'payment'])->name('customer.checkout.payment');
+    Route::any('/checkout/finish/{orderId}', [CheckoutController::class, 'finish'])->name('customer.checkout.finish');
+    Route::get('/checkout/error', [CheckoutController::class, 'error'])->name('customer.checkout.error');
+    Route::get('/checkout/pending', [CheckoutController::class, 'pending'])->name('customer.checkout.pending');
+    Route::get('/checkout/invoice/{orderId}', [CheckoutController::class, 'invoice'])->name('customer.checkout.invoice');
+});
 
 Route::get('/tentang', function () {
     return view('tentang-kami.index');
