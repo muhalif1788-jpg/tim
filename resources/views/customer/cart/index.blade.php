@@ -1,90 +1,32 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keranjang Belanja - Abon Sapi</title>
-    <link rel="stylesheet" href="{{ asset('css/cart.css') }}">
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-</head>
-<body>
+@extends('layouts.customer')
 
-<!-- Header -->
-<header class="header">
+@section('title', 'Keranjang Belanja - Abon Sapi')
+@section('content')
+<div class="cart-page">
     <div class="container">
-        <div class="header-content">
-            <div class="logo">
-                <a href="{{ url('/') }}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
-                    <img src="{{ asset('images/logo.png') }}" alt="LOGO" class="logo-img">
-                    <div class="logo-text">
-                        <span class="logo-main">Predict &</span>
-                        <span class="logo-sub">Selenpleapnya</span>
-                    </div>
-                </a>
+        <!-- Alert Messages -->
+        @if(session('success'))
+            <div class="alert alert-success">
+                <i data-feather="check-circle"></i>
+                {{ session('success') }}
             </div>
-            <nav class="nav">
-                <ul class="nav-list">
-                    <li><a href="{{ url('/') }}" class="nav-link">Home</a></li>
-                    <li><a href="{{ route('customer.products.index') }}" class="nav-link">Produk</a></li>
-                    <li><a href="{{ route('cart.index') }}" class="nav-link active">
-                        <i data-feather="shopping-cart"></i>
-                        @if($carts->count() > 0)
-                            <span class="cart-badge" id="cart-count">{{ $total_items }}</span>
-                        @endif
-                    </a></li>
-                    <li><a href="{{ url('/#tentang') }}" class="nav-link">Tentang Kami</a></li>
-                    <li><a href="{{ url('/#kontak') }}" class="nav-link">Kontak</a></li>
-                    
-                    <li class="nav-auth">
-                        <span class="user-welcome">
-                            <i data-feather="user"></i>
-                            Hi, {{ Auth::user()->name }}
-                        </span>
-                    </li>
-                    <li class="nav-auth">
-                        <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                            @csrf
-                            <button type="submit" class="btn-logout">
-                                <i data-feather="log-out"></i>
-                                Logout
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </div>
-</header>
+        @endif
+        
+        @if(session('error'))
+            <div class="alert alert-error">
+                <i data-feather="alert-circle"></i>
+                {{ session('error') }}
+            </div>
+        @endif
+        
+        @if(session('info'))
+            <div class="alert alert-info">
+                <i data-feather="info"></i>
+                {{ session('info') }}
+            </div>
+        @endif
 
-<!-- Alert Messages -->
-<div class="container">
-    @if(session('success'))
-        <div class="alert alert-success">
-            <i data-feather="check-circle"></i>
-            {{ session('success') }}
-        </div>
-    @endif
-    
-    @if(session('error'))
-        <div class="alert alert-error">
-            <i data-feather="alert-circle"></i>
-            {{ session('error') }}
-        </div>
-    @endif
-    
-    @if(session('info'))
-        <div class="alert alert-info">
-            <i data-feather="info"></i>
-            {{ session('info') }}
-        </div>
-    @endif
-</div>
-
-<!-- Cart Section -->
-<section class="cart-container">
-    <div class="container">
+        <!-- Cart Header -->
         <div class="cart-header">
             <h1 class="cart-title">
                 <i data-feather="shopping-cart"></i>
@@ -114,16 +56,16 @@
                                 <div class="item-image">
                                     @if($cart->produk->gambar)
                                         <img src="{{ asset('storage/' . $cart->produk->gambar) }}" 
-                                             alt="{{ $cart->produk->nama }}" 
+                                             alt="{{ $cart->produk->nama_produk ?? $cart->produk->nama }}" 
                                              onerror="this.src='{{ asset('images/default-product.jpg') }}'">
                                     @else
                                         <img src="{{ asset('images/default-product.jpg') }}" 
-                                             alt="{{ $cart->produk->nama }}">
+                                             alt="{{ $cart->produk->nama_produk ?? $cart->produk->nama }}">
                                     @endif
                                 </div>
                                 
                                 <div class="item-details">
-                                    <h4 class="item-name">{{ $cart->produk->nama }}</h4>
+                                    <h4 class="item-name">{{ $cart->produk->nama_produk ?? $cart->produk->nama }}</h4>
                                     @if($cart->produk->kategori)
                                         <span class="item-category">{{ $cart->produk->kategori->nama }}</span>
                                     @endif
@@ -263,38 +205,177 @@
             </div>
         @endif
     </div>
-</section>
+</div>
+@endsection
 
-<!-- Footer -->
-<footer class="footer">
-    <div class="container">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>ABON SAPI</h3>
-                <p>Kedai dengan sejuta cita rasa yang tidak terlupakan</p>
-            </div>
-            <div class="footer-section">
-                <h3>Kontak</h3>
-                <p>Email: info@abonsapi.com</p>
-                <p>Telp: (021) 1234-5678</p>
-            </div>
-            <div class="footer-section">
-                <h3>Alamat</h3>
-                <p>Jl. Contoh No. 123<br>Jakarta, Indonesia</p>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 Abon Sapi. All rights reserved.</p>
-        </div>
-    </div>
-</footer>
-
+@section('scripts')
 <script src="{{ asset('js/cart.js') }}"></script>
 <script>
-    // Initialize feather icons
     document.addEventListener('DOMContentLoaded', function() {
         feather.replace();
+        
+        // Update cart count in header
+        updateCartHeaderCount({{ $total_items ?? 0 }});
     });
+
+    function updateCartHeaderCount(count) {
+        const cartBadge = document.querySelector('.cart-badge');
+        const cartLink = document.querySelector('a[href="{{ route("cart.index") }}"]');
+        
+        if (count > 0) {
+            if (!cartBadge) {
+                const badge = document.createElement('span');
+                badge.className = 'cart-badge';
+                badge.id = 'cart-count';
+                badge.textContent = count;
+                cartLink.appendChild(badge);
+            } else {
+                cartBadge.textContent = count;
+            }
+        } else if (cartBadge) {
+            cartBadge.remove();
+        }
+    }
+
+    function confirmClearCart() {
+        Swal.fire({
+            title: 'Kosongkan Keranjang?',
+            text: "Semua item di keranjang akan dihapus. Tindakan ini tidak dapat dibatalkan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Kosongkan!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('clear-form').submit();
+            }
+        });
+    }
+
+    function confirmRemoveItem(cartId) {
+        Swal.fire({
+            title: 'Hapus Item?',
+            text: "Item ini akan dihapus dari keranjang",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('remove-form-' + cartId).submit();
+            }
+        });
+    }
+
+    function decreaseQuantity(cartId) {
+        const input = document.getElementById('quantity-input-' + cartId);
+        const currentValue = parseInt(input.value);
+        
+        if (currentValue > 1) {
+            input.value = currentValue - 1;
+            updateQuantity(cartId);
+        }
+    }
+
+    function increaseQuantity(cartId) {
+        const input = document.getElementById('quantity-input-' + cartId);
+        const currentValue = parseInt(input.value);
+        const max = parseInt(input.max);
+        
+        if (currentValue < max) {
+            input.value = currentValue + 1;
+            updateQuantity(cartId);
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Stok Terbatas',
+                text: 'Jumlah melebihi stok yang tersedia',
+            });
+        }
+    }
+
+    function updateQuantity(cartId) {
+        const form = document.getElementById('quantity-form-' + cartId);
+        const input = document.getElementById('quantity-input-' + cartId);
+        const quantity = parseInt(input.value);
+        const max = parseInt(input.max);
+        
+        if (quantity < 1) {
+            input.value = 1;
+            return;
+        }
+        
+        if (quantity > max) {
+            input.value = max;
+            Swal.fire({
+                icon: 'info',
+                title: 'Stok Terbatas',
+                text: 'Jumlah disesuaikan dengan stok maksimum: ' + max,
+            });
+        }
+        
+        // Submit form via AJAX
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update cart count
+                updateCartHeaderCount(data.cartCount);
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Jumlah item diperbarui',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    // Reload page to update totals
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: data.message || 'Gagal memperbarui jumlah item'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Terjadi kesalahan saat memperbarui jumlah'
+            });
+        });
+    }
+
+    function validateCart() {
+        // Check if any product is out of stock
+        const outOfStockItems = document.querySelectorAll('.stock-out');
+        if (outOfStockItems.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Tidak Dapat Checkout',
+                text: 'Ada produk yang stoknya habis. Silakan hapus terlebih dahulu.',
+            });
+            return false;
+        }
+        return true;
+    }
 </script>
-</body>
-</html>
+@endsection

@@ -9,7 +9,7 @@ use App\Models\Cart;
 use App\Models\Transaksi; // GANTI Order dengan Transaksi
 use Illuminate\Support\Facades\Auth;
 
-class DashboardCustomer extends Controller
+class DashboardCustomerController extends Controller
 {
     public function __construct()
     {

@@ -84,7 +84,8 @@
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                                 <input type="hidden" name="quantity" value="1">
                                 <button type="submit" class="btn-add-to-cart">
-                                    <i data-feather="shopping-cart"></i> Tambah ke Keranjang
+                                    <i data-feather="
+                                    hopping-cart"></i> Tambah ke Keranjang
                                 </button>
                             </form>
                             <a href="{{ route('customer.products.show', $product->id) }}" class="btn-view-detail">

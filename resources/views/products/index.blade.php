@@ -1,83 +1,9 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Produk - Kedai Pesisir</title>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="{{ asset('css/produk.css') }}">
-</head>
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <img src="{{ asset('images/logo.png') }}" alt="LOGO" class="logo-img">
-                    <div class="logo-text">
-                        <span class="logo-main">Predict &</span>
-                        <span class="logo-sub">Selenpleapnya</span>
-                    </div>
-                </div>
-                <nav class="nav">
-                    <ul class="nav-list">
-                        <li><a href="{{ url('/') }}" class="nav-link">Home</a></li>
-                        <li><a href="{{ route('customer.products.index') }}" class="nav-link active">Produk</a></li>
-                        <li><a href="{{ url('/tentang') }}" class="nav-link">Tentang Kami</a></li>
-                        <li><a href="{{ url('/kontak') }}" class="nav-link">Kontak</a></li>
-                        
-                        <!-- Keranjang -->
-                        @auth
-                            @php
-                                $cartCount = \App\Models\Cart::where('user_id', auth()->id())->sum('quantity');
-                            @endphp
-                            <li>
-                                <a href="{{ route('cart.index') }}" class="nav-link">
-                                    <i data-feather="shopping-cart"></i>
-                                    
-                                    @if($cartCount > 0)
-                                        <span class="cart-badge">{{ $cartCount }}</span>
-                                    @endif
-                                </a>
-                            </li>
-                        @else
-                            <li>
-                                <a href="{{ route('login') }}" class="nav-link">
-                                    <i data-feather="shopping-cart"></i>
-                                    
-                                </a>
-                            </li>
-                        @endauth
-                        
-                        <!-- User Info -->
-                        @auth
-                            <li class="user-info">
-                                <i data-feather="user"></i>
-                                <span>Hi, {{ Auth::user()->name }}</span>
-                            </li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                                    @csrf
-                                    <button type="submit" class="logout-btn">
-                                        <i data-feather="log-out"></i>
-                                        Logout
-                                    </button>
-                                </form>
-                            </li>
-                        @else
-                            <li>
-                                <a href="{{ route('login') }}" class="login-btn">
-                                    <i data-feather="log-in"></i>
-                                    Login
-                                </a>
-                            </li>
-                        @endauth
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </header>
+@extends('layouts.customer')
 
+@section('title', 'Produk - Kedai Pesisir')
+
+@section('content')
+<div class="products-page">
     <!-- Products Hero Section -->
     <section class="products-hero">
         <div class="container">
@@ -164,7 +90,7 @@
                                         @csrf
                                         <input type="hidden" name="produk_id" value="{{ $item->id }}">
                                         <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="btn btn-primary">
+                                        <button type="submit" class="btn btn-primary add-to-cart-btn">
                                             <i data-feather="shopping-cart"></i>
                                             Tambah Keranjang
                                         </button>
@@ -190,33 +116,102 @@
             @endif
         </div>
     </section>
+</div>
+@endsection
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>KEDAI PESISIR</h3>
-                    <p>Kedai dengan sejuta cita rasa yang tak terlupakan</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Kontak</h3>
-                    <p>Email: info@kedaipesisir.com</p>
-                    <p>Telp: (021) 1234-5678</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Alamat</h3>
-                    <p>Jl. Contoh No. 123<br>Jakarta, Indonesia</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Kedai Pesisir. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script>
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
         feather.replace();
-    </script>
-</body>
-</html>
+        
+        // Add to cart form submission
+        document.querySelectorAll('.add-to-cart-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const button = this.querySelector('.add-to-cart-btn');
+                const originalHTML = button.innerHTML;
+                
+                // Show loading state
+                button.innerHTML = '<i data-feather="loader"></i> Menambahkan...';
+                button.disabled = true;
+                feather.replace();
+                
+                // Submit form
+                fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update cart count in header
+                        updateCartCount(data.cartCount);
+                        
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message || 'Produk ditambahkan ke keranjang',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: data.message || 'Gagal menambahkan ke keranjang'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Terjadi kesalahan saat menambahkan ke keranjang'
+                    });
+                })
+                .finally(() => {
+                    // Reset button
+                    button.innerHTML = originalHTML;
+                    button.disabled = false;
+                    feather.replace();
+                });
+            });
+        });
+        
+        // Update cart count function
+        function updateCartCount(count) {
+            let cartBadge = document.querySelector('.cart-badge');
+            const cartLink = document.querySelector('a[href="{{ route("cart.index") }}"]');
+            
+            if (count > 0) {
+                if (!cartBadge) {
+                    cartBadge = document.createElement('span');
+                    cartBadge.className = 'cart-badge';
+                    cartBadge.textContent = count;
+                    cartLink.appendChild(cartBadge);
+                } else {
+                    cartBadge.textContent = count;
+                }
+            } else if (cartBadge) {
+                cartBadge.remove();
+            }
+        }
+        
+        // Load initial cart count
+        fetch('{{ route("cart.count") }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.count > 0) {
+                    updateCartCount(data.count);
+                }
+            });
+    });
+</script>
+@endsection

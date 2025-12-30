@@ -13,7 +13,6 @@ class CartController extends Controller
     // Tampilkan cart user yang login
     public function index()
     {
-        // Cek apakah user sudah login
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
         }
@@ -38,99 +37,117 @@ class CartController extends Controller
     }
 
     // Tambah produk ke cart
-   public function store(Request $request)
+    public function store(Request $request)
     {
-    // Cek login
-    if (!Auth::check()) {
-        return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
-    }
-
-    $request->validate([
-        'produk_id' => 'required|exists:produk,id',
-        'quantity' => 'nullable|integer|min:1|max:99'
-    ]);
-
-    $produk = Produk::where('id', $request->produk_id)
-                    ->where('status', true)
-                    ->first();
-
-    if (!$produk) {
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Produk tidak ditemukan atau tidak aktif!'
-            ], 404);
-        }
-        return redirect()->back()->with('error', 'Produk tidak ditemukan atau tidak aktif!');
-    }
-
-    // Cek stok
-    if ($produk->stok < ($request->quantity ?? 1)) {
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Stok produk tidak mencukupi! Stok tersedia: ' . $produk->stok
-            ], 400);
-        }
-        return redirect()->back()->with('error', 'Stok produk tidak mencukupi!');
-    }
-
-    // Cek apakah produk sudah ada di cart
-    $existingCart = Cart::where('user_id', Auth::id())
-                        ->where('produk_id', $request->produk_id)
-                        ->first();
-
-    if ($existingCart) {
-        // Update quantity
-        $newQuantity = $existingCart->quantity + ($request->quantity ?? 1);
-        
-        if ($produk->stok < $newQuantity) {
+        // Cek login
+        if (!Auth::check()) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Stok tidak cukup untuk menambah jumlah!'
+                    'message' => 'Silakan login terlebih dahulu!'
+                ], 401);
+            }
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
+        }
+
+        // DEBUG: Log request untuk melihat data yang masuk
+        \Log::info('Cart Store Request:', $request->all());
+
+        $request->validate([
+            'produk_id' => 'required|exists:produk,id', // PERBAIKAN: 'produks' bukan 'produk'
+            'quantity' => 'required|integer|min:1|max:99' // PERBAIKAN: 'required' bukan 'nullable'
+        ]);
+
+        $produk = Produk::where('id', $request->produk_id)
+                        ->where('status', true)
+                        ->first();
+
+        if (!$produk) {
+            \Log::error('Produk tidak ditemukan: ' . $request->produk_id);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Produk tidak ditemukan atau tidak aktif!'
+                ], 404);
+            }
+            return redirect()->back()->with('error', 'Produk tidak ditemukan atau tidak aktif!');
+        }
+
+        // Cek stok
+        $quantity = $request->quantity;
+        if ($produk->stok < $quantity) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stok produk tidak mencukupi! Stok tersedia: ' . $produk->stok
                 ], 400);
             }
-            return redirect()->back()->with('error', 'Stok tidak cukup!');
+            return redirect()->back()->with('error', 'Stok produk tidak mencukupi! Stok tersedia: ' . $produk->stok);
         }
+
+        // Cek apakah produk sudah ada di cart
+        $existingCart = Cart::where('user_id', Auth::id())
+                            ->where('produk_id', $request->produk_id)
+                            ->first();
+
+        if ($existingCart) {
+            // Update quantity
+            $newQuantity = $existingCart->quantity + $quantity;
+            
+            if ($produk->stok < $newQuantity) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Stok tidak cukup untuk menambah jumlah!'
+                    ], 400);
+                }
+                return redirect()->back()->with('error', 'Stok tidak cukup untuk menambah jumlah!');
+            }
+            
+            $existingCart->update(['quantity' => $newQuantity]);
+            $message = 'Jumlah produk berhasil ditambahkan!';
+        } else {
+            // Buat cart baru
+            Cart::create([
+                'user_id' => Auth::id(),
+                'produk_id' => $request->produk_id,
+                'quantity' => $quantity
+            ]);
+            $message = 'Produk berhasil ditambahkan ke keranjang!';
+        }
+
+        // Hitung total item di cart
+        $cart_count = Cart::where('user_id', Auth::id())->sum('quantity');
         
-        $existingCart->update(['quantity' => $newQuantity]);
-        $message = 'Jumlah produk berhasil ditambahkan!';
-    } else {
-        // Buat cart baru
-        Cart::create([
+        // Debug log
+        \Log::info('Cart berhasil ditambahkan:', [
             'user_id' => Auth::id(),
             'produk_id' => $request->produk_id,
-            'quantity' => $request->quantity ?? 1
+            'quantity' => $quantity,
+            'cart_count' => $cart_count
         ]);
-        $message = 'Produk berhasil ditambahkan ke keranjang!';
+
+        // Response untuk AJAX request
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'cart_count' => $cart_count,
+                'total_items' => $cart_count
+            ]);
+        }
+        
+        // Redirect untuk non-AJAX
+        return redirect()->back()->with('success', $message);
     }
 
-    // Hitung total cart
-    $cart_count = Cart::where('user_id', Auth::id())->sum('quantity');
-    
-    // Jika request AJAX, kembalikan JSON
-    if ($request->expectsJson() || $request->ajax()) {
-        return response()->json([
-            'success' => true,
-            'message' => $message,
-            'cart_count' => $cart_count,
-            'total_items' => $cart_count
-        ]);
-    }
-    
-    // Jika bukan AJAX, redirect back dengan success message
-    return redirect()->back()->with('success', $message);
-}
     // Update quantity
     public function update(Request $request, Cart $cart)
     {
-        // Cek login
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
         }
 
-        // Pastikan cart milik user yang login
         if ($cart->user_id !== Auth::id()) {
             return redirect()->route('cart.index')->with('error', 'Akses ditolak!');
         }
@@ -139,13 +156,11 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1|max:99'
         ]);
 
-        // Cek produk
         if (!$cart->produk || !$cart->produk->status) {
             return redirect()->route('cart.index')
                            ->with('error', 'Produk tidak tersedia!');
         }
 
-        // Cek stok
         if ($cart->produk->stok < $request->quantity) {
             return redirect()->back()
                            ->with('error', 'Stok hanya ' . $cart->produk->stok . ' pcs!');
@@ -160,12 +175,10 @@ class CartController extends Controller
     // Hapus item dari cart
     public function destroy(Cart $cart)
     {
-        // Cek login
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
         }
 
-        // Pastikan cart milik user yang login
         if ($cart->user_id !== Auth::id()) {
             return redirect()->route('cart.index')->with('error', 'Akses ditolak!');
         }
@@ -179,7 +192,6 @@ class CartController extends Controller
     // Kosongkan cart
     public function clear()
     {
-        // Cek login
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
         }

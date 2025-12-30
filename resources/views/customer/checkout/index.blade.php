@@ -1,4 +1,3 @@
-{{-- resources/views/customer/checkout/index.blade.php --}}
 @extends('layouts.customer')
 
 @section('title', 'Checkout')

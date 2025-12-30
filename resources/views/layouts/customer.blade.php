@@ -11,13 +11,16 @@
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <!-- Bootstrap CSS (untuk form checkout) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/customer.css') }}">
-    
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/cart.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/produk.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tentang.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/kontak.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/orders.css') }}">
+
     @stack('styles')
 </head>
 <body>
@@ -26,7 +29,7 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <a href="{{ url('/') }}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                    <a href="{{ url('/dashboard') }}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                         <img src="{{ asset('images/logo.png') }}" alt="LOGO" class="logo-img">
                         <div class="logo-text">
                             <span class="logo-main">Predict &</span>
@@ -36,27 +39,57 @@
                 </div>
                 <nav class="nav">
                     <ul class="nav-list">
-                        <li><a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}">Home</a></li>
-                        
-                        <!-- Auth Logic untuk Produk Link -->
+                        <!-- Dashboard/Home -->
                         @auth
-                            <li><a href="{{ route('customer.products.index') }}" class="nav-link {{ request()->is('customer/products*') ? 'active' : '' }}">Produk</a></li>
+                            <li>
+                                <a href="{{ url('/dashboard') }}" 
+                                class="nav-link {{ request()->is('dashboard') || request()->routeIs('dashboard') ? 'active' : '' }}">
+                                    Dashboard
+                                </a>
+                            </li>
                         @else
-                            <li><a href="#produk" class="nav-link">Produk</a></li>
+                            <li>
+                                <a href="{{ url('/') }}" 
+                                class="nav-link {{ request()->is('/') ? 'active' : '' }}">
+                                    Home
+                                </a>
+                            </li>
                         @endauth
                         
-                        <li><a href="#tentang" class="nav-link">Tentang Kami</a></li>
-                        <li><a href="#kontak" class="nav-link">Kontak</a></li>
+                        <!-- Produk -->
+                        @auth
+                            <li>
+                                <a href="{{ route('customer.products.index') }}" 
+                                class="nav-link {{ request()->is('customer/products*') || request()->routeIs('customer.products*') ? 'active' : '' }}">
+                                    Produk
+                                </a>
+                            </li>
+                        @else
+                            <li>
+                                <a href="{{ route('products.public') }}" 
+                                class="nav-link {{ request()->is('products*') || request()->routeIs('products.public') ? 'active' : '' }}">
+                                    Produk
+                                </a>
+                            </li>
+                        @endauth
+                        
+                        
 
                         <!-- Navbar Keranjang -->
                         @auth
-                            <li><a href="{{ route('cart.index') }}" class="nav-link">
-                                <i data-feather="shopping-cart"></i>
-                                Keranjang
-                                @if(isset($cartCount) && $cartCount > 0)
-                                    <span class="cart-badge">{{ $cartCount }}</span>
-                                @endif
-                            </a></li>
+                            <li>
+                                <a href="{{ route('cart.index') }}" 
+                                class="nav-link {{ request()->is('cart*') || request()->routeIs('cart.*') ? 'active' : '' }}">
+                                    <i data-feather="shopping-cart"></i>
+                                    Keranjang
+                                    @php
+                                        $cartCount = \App\Models\Cart::where('user_id', auth()->id())->sum('quantity');
+                                    @endphp
+                                    @if($cartCount > 0)
+                                        <span class="cart-badge">{{ $cartCount }}</span>
+                                    @endif
+                                </a>
+                            </li>
                         @else
                             <li>
                                 <button class="nav-link-btn" onclick="showLoginAlert('mengakses keranjang')">
@@ -64,26 +97,95 @@
                                 </button>
                             </li>
                         @endauth
+
+                        <!-- Tentang Kami -->
+                        <li>
+                            <a href="{{ route('tentang') }}" 
+                            class="nav-link {{ request()->is('tentang*') || request()->routeIs('tentang*') ? 'active' : '' }}">
+                                Tentang Kami
+                            </a>
+                        </li>
                         
-                        <!-- Auth Logic untuk Login/Logout -->
+                        <!-- Kontak -->
+                        <li>
+                            <a href="{{ url('/kontak') }}" 
+                            class="nav-link {{ request()->is('kontak*') ? 'active' : '' }}">
+                                Kontak
+                            </a>
+                        </li>
+
+                        <!-- Profil Dropdown -->
                         @auth
-                            <li class="nav-auth">
-                                <span class="user-welcome">
-                                    <i data-feather="user"></i>
-                                    Hi, {{ Auth::user()->name }}
-                                </span>
-                            </li>
-                            <li class="nav-auth">
-                                <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                                    @csrf
-                                    <button type="submit" class="btn-logout">
-                                        <i data-feather="log-out"></i>
-                                        Logout
-                                    </button>
-                                </form>
+                            <li class="profile-dropdown-container">
+                                <button class="profile-dropdown-btn" id="profileDropdownBtn">
+                                    <div class="profile-avatar">
+                                        @if(Auth::user()->profile_picture)
+                                            <img src="{{ asset('storage/' . Auth::user()->profile_picture) }}" 
+                                                 alt="{{ Auth::user()->name }}" class="profile-img">
+                                        @else
+                                            <div class="avatar-placeholder">
+                                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <span class="profile-name">{{ Auth::user()->name }}</span>
+                                    <i data-feather="chevron-down" class="dropdown-icon"></i>
+                                </button>
+                                
+                                <div class="profile-dropdown-menu" id="profileDropdownMenu">
+                                    <!-- Header Profil -->
+                                    <div class="profile-menu-header">
+                                        <div class="profile-menu-avatar">
+                                            @if(Auth::user()->profile_picture)
+                                                <img src="{{ asset('storage/' . Auth::user()->profile_picture) }}" 
+                                                     alt="{{ Auth::user()->name }}">
+                                            @else
+                                                <div class="menu-avatar-placeholder">
+                                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="profile-menu-info">
+                                            <h4>{{ Auth::user()->name }}</h4>
+                                            <p>{{ Auth::user()->email }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="profile-menu-divider"></div>
+                                    
+                                    <!-- Menu Items -->
+                                    <a href="{{ route('profile.index') }}" class="profile-menu-item">
+                                        <i data-feather="user"></i>
+                                        <span>Profil Saya</span>
+                                    </a>
+                                    
+                                    <a href="{{ route('orders.index') }}" class="profile-menu-item">
+                                        <i data-feather="shopping-bag"></i>
+                                        <span>Pesanan Saya</span>
+                                        @php
+                                            $pendingOrders = \App\Models\Transaksi::where('user_id', auth()->id())
+                                                ->where('status', 'pending')
+                                                ->count();
+                                        @endphp
+                                        @if($pendingOrders > 0)
+                                            <span class="menu-badge">{{ $pendingOrders }}</span>
+                                        @endif
+                                    </a>
+                                    
+                                    <div class="profile-menu-divider"></div>
+                                    
+                                    <!-- Logout -->
+                                    <form method="POST" action="{{ route('logout') }}" id="logoutForm">
+                                        @csrf
+                                        <button type="button" class="profile-menu-item logout-btn" id="logoutBtn">
+                                            <i data-feather="log-out"></i>
+                                            <span>Keluar</span>
+                                        </button>
+                                    </form>
+                                </div>
                             </li>
                         @else
-                            <li class="nav-auth">
+                            <li class="login-btn-container">
                                 <a href="{{ route('login') }}" class="btn-login">
                                     <i data-feather="log-in"></i>
                                     Login
@@ -188,8 +290,59 @@
             });
         }
         
-        // Auto-dismiss alerts after 5 seconds
+        // Profile Dropdown Functionality
         document.addEventListener('DOMContentLoaded', function() {
+            const dropdownBtn = document.getElementById('profileDropdownBtn');
+            const dropdownMenu = document.getElementById('profileDropdownMenu');
+            const logoutBtn = document.getElementById('logoutBtn');
+            
+            // Toggle dropdown
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                    dropdownBtn.classList.toggle('active');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        dropdownMenu.classList.remove('show');
+                        dropdownBtn.classList.remove('active');
+                    }
+                });
+                
+                // Close dropdown on menu item click
+                dropdownMenu.querySelectorAll('.profile-menu-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        dropdownMenu.classList.remove('show');
+                        dropdownBtn.classList.remove('active');
+                    });
+                });
+            }
+            
+            // Logout confirmation
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Konfirmasi Logout',
+                        text: 'Apakah Anda yakin ingin keluar?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#294066',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Ya, Keluar',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('logoutForm').submit();
+                        }
+                    });
+                });
+            }
+            
+            // Auto-dismiss alerts after 5 seconds
             setTimeout(function() {
                 const alerts = document.querySelectorAll('.alert');
                 alerts.forEach(function(alert) {

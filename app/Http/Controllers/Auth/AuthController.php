@@ -41,7 +41,8 @@ class AuthController extends Controller
                 return redirect()->intended('/admin/dashboard');
             }
             
-            return redirect()->intended('/');
+             return redirect()->intended(route('customer.dashboard'))
+                ->with('success', 'Login berhasil! Selamat datang di dashboard Anda.');
         }
 
         return back()->withErrors([

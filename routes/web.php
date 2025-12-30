@@ -6,9 +6,13 @@ use App\Http\Controllers\Admin\DetailTransaksiController;
 use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
 use App\Http\Controllers\Admin\KategoriController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Customer\DashboardCustomer;
+use App\Http\Controllers\Customer\DashboardCustomerController;
 use App\Http\Controllers\Customer\ProductsController as CustomerProdukController;
 use App\Http\Controllers\Customer\CartController;
-use App\Http\Controllers\Customer\CheckoutController;  
+use App\Http\Controllers\Customer\CheckoutController;
+use App\Http\Controllers\Customer\ProfileController;
+use App\Http\Controllers\Customer\OrderController;  
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,7 +42,10 @@ Route::get('/', [HomeController::class, 'index'])->name('app');
 Route::get('/products', [CustomerProdukController::class, 'index'])->name('customer.products.index');
 Route::get('/products/{id}', [CustomerProdukController::class, 'show'])->name('customer.products.show');
 Route::get('/products/search', [CustomerProdukController::class, 'search'])->name('customer.products.search');
+
+
 Route::middleware(['auth', 'customer'])->group(function () {
+    Route::get('/dashboard', [DashboardCustomerController::class, 'index'])->name('customer.dashboard');
 // Cart Routes
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/store', [CartController::class, 'store'])->name('cart.store');
@@ -54,11 +61,33 @@ Route::middleware(['auth', 'customer'])->group(function () {
     Route::get('/checkout/error', [CheckoutController::class, 'error'])->name('customer.checkout.error');
     Route::get('/checkout/pending', [CheckoutController::class, 'pending'])->name('customer.checkout.pending');
     Route::get('/checkout/invoice/{orderId}', [CheckoutController::class, 'invoice'])->name('customer.checkout.invoice');
+    Route::get('/tentang', function () {return view('tentang-kami.index');})->name('tentang');
+    Route::get('/kontak', function () {return view('customer.kontak.index'); })->name('kontak');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.avatar');
+    
+    // Password Routes
+    Route::get('/password/change', [ProfileController::class, 'showChangePassword'])->name('password.change');
+    Route::put('/password/change', [ProfileController::class, 'updatePassword'])->name('password.update');
+    
+    // Orders Routes
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{id}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
+    Route::get('/orders/{id}/track', [OrderController::class, 'track'])->name('orders.track');
+    Route::delete('/orders/{id}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    
+    // Export PDF
+    Route::get('/orders/{id}/export-pdf', function($id) {
+        $transaction = \App\Models\Transaksi::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+            
+        // Logika export PDF bisa ditambahkan di sini
+        return redirect()->back()->with('info', 'Fitur export PDF akan segera tersedia');
+    })->name('orders.export-pdf');
 });
-
-Route::get('/tentang', function () {
-    return view('tentang-kami.index');
-})->name('tentang');
 
 
 // ==================== ADMIN ROUTES ====================

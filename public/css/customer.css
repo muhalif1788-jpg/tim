@@ -97,10 +97,41 @@ body {
     color: white;
     text-decoration: none;
     font-weight: 500;
+    padding: 0.5rem 0;
+    position: relative;
     transition: color 0.3s;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+}
+
+/* Garis bawah saat hover */
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #FFD700;
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+/* Garis bawah TETAP ada saat active */
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #FFD700;
+    border-radius: 2px 2px 0 0;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 .nav-link:hover,
@@ -143,6 +174,393 @@ body {
 /* Auth Button Styles */
 .nav-auth {
     margin-left: 1rem;
+}
+/* Profile Dropdown Container */
+.profile-dropdown-container {
+    position: relative;
+    list-style: none;
+    margin-left: 15px;
+}
+
+/* Profile Dropdown Button */
+.profile-dropdown-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid transparent;
+    border-radius: 25px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+.profile-dropdown-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.profile-dropdown-btn.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #FFD700;
+}
+
+/* Profile Avatar */
+.profile-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid white;
+    background: linear-gradient(135deg, #294066 0%, #1a2d4d 100%);
+    flex-shrink: 0;
+}
+
+.profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
+/* Profile Name */
+.profile-name {
+    font-weight: 500;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+}
+
+.profile-dropdown-btn.active .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+/* Profile Dropdown Menu */
+.profile-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 280px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(41, 64, 102, 0.2);
+    border: 1px solid rgba(41, 64, 102, 0.1);
+    padding: 15px 0;
+    margin-top: 10px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.profile-dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Profile Menu Header */
+.profile-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 15px 15px;
+    border-bottom: 1px solid #f0f4f8;
+    margin-bottom: 10px;
+}
+
+.profile-menu-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #FFD700;
+    background: linear-gradient(135deg, #294066 0%, #1a2d4d 100%);
+    flex-shrink: 0;
+}
+
+.profile-menu-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.menu-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.4rem;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
+.profile-menu-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-menu-info h4 {
+    margin: 0 0 4px;
+    color: #2c3e50;
+    font-size: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-menu-info p {
+    margin: 0;
+    color: #7f8c8d;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Menu Divider */
+.profile-menu-divider {
+    height: 1px;
+    background: #f0f4f8;
+    margin: 10px 15px;
+}
+
+/* Menu Items */
+.profile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    color: #2c3e50;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-size: 0.95rem;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.profile-menu-item:hover {
+    background: #f8fafc;
+    color: #294066;
+    border-left-color: #294066;
+}
+
+.profile-menu-item i {
+    width: 18px;
+    height: 18px;
+    color: #5d6d7e;
+    flex-shrink: 0;
+}
+
+.profile-menu-item:hover i {
+    color: #294066;
+}
+
+.profile-menu-item span {
+    flex: 1;
+}
+
+/* Badge */
+.menu-badge {
+    background: #e74c3c;
+    color: white;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* Logout Button */
+.logout-btn {
+    color: #e74c3c !important;
+}
+
+.logout-btn:hover {
+    background: #fee !important;
+    color: #c0392b !important;
+}
+
+.logout-btn i {
+    color: #e74c3c !important;
+}
+
+/* Login Button */
+.login-btn-container {
+    margin-left: 15px;
+}
+
+.btn-login {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid transparent;
+    border-radius: 25px;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.btn-login:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.btn-login i {
+    width: 18px;
+    height: 18px;
+}
+
+/* Navbar Button Styling */
+.nav-link-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-link-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link-btn i {
+    width: 20px;
+    height: 20px;
+}
+
+/* Cart Badge Styling */
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #FF4757;
+    color: white;
+    font-size: 0.75rem;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 2px solid #294066;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .profile-name {
+        display: none;
+    }
+    
+    .profile-dropdown-btn {
+        padding: 8px 12px;
+    }
+    
+    .btn-login span {
+        display: none;
+    }
+    
+    .btn-login {
+        padding: 8px 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-dropdown-menu {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+        border-radius: 15px 15px 0 0;
+        width: 100%;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    
+    .profile-dropdown-menu.show {
+        animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+}
+
+/* Active State untuk Navbar (tambahan) */
+.nav-link.active {
+    color: #FFD700;
+    font-weight: 600;
+}
+
+.nav-link {
+    position: relative;
+    padding: 0.5rem 0;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: #FFD700;
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    width: 100%;
 }
 
 .btn-login {

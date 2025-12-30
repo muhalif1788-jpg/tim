@@ -16,7 +16,6 @@ class Kategori extends Model
 
     protected $fillable = [
         'nama_kategori',
-        // HAPUS 'deskripsi'
     ];
 
     public function produks()
