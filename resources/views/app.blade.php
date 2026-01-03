@@ -18,14 +18,14 @@
                 <a href="{{ url('/') }}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                     <img src="{{ asset('images/logo.png') }}" alt="LOGO" class="logo-img">
                     <div class="logo-text">
-                        <span class="logo-main">Predict &</span>
-                        <span class="logo-sub">Selenpleapnya</span>
+                        <span class="logo-main">Abon</span>
+                        <span class="logo-sub">Ummi</span>
                     </div>
                 </a>
             </div>
             <nav class="nav">
                 <ul class="nav-list">
-                    <li><a href="#home" class="nav-link active">Home</a></li>
+                    <li><a href="#home" class="nav-link active">Beranda</a></li>
                     
                     <!-- Auth Logic untuk Produk Link -->
                     @auth
@@ -96,17 +96,6 @@
             <div class="hero-image">
                 <img src="{{ asset('images/hero.jpg') }}" alt="Abon Sapi" class="hero-jpg">
             </div>
-
-            <div class="hero-actions">
-                <button class="btn btn-primary" onclick="handleOrder()">Pesan Sekarang</button>
-                
-                <!-- Auth Logic untuk Tombol Lihat Produk -->
-                @auth
-                    <a href="{{ route('customer.products.index') }}" class="btn btn-secondary">Lihat Produk</a>
-                @else
-                    <button class="btn btn-secondary" onclick="showLoginAlert('lihat produk')">Lihat Produk</button>
-                @endauth
-            </div>
         </div>
     </div>
 </section>
@@ -125,7 +114,7 @@
                 @foreach($produk as $product)
                 <div class="product-card">
                     <div class="product-image">
-                        @if($product->gambar)  <!-- GAMBAR bukan image -->
+                        @if($product->gambar)
                             <img src="{{ asset('storage/' . $product->gambar) }}" alt="{{ $product->nama_produk }}">
                         @else
                             <img src="{{ asset('images/default-product.jpg') }}" alt="{{ $product->nama_produk }}">
@@ -160,7 +149,7 @@
             <!-- Left Side - Features -->
             <div class="why-features">
                 <div class="why-header">
-                    <p class="why-subtitle">Why Kedai Pesisir ?</p>
+                    <p class="why-subtitle">Kenapa Harus Abon Umi ?</p>
                     <h2 class="why-title">CITA RASA YANG TIDAK<br>ADA DUANYA</h2>
                 </div>
                 
@@ -171,7 +160,7 @@
                         </div>
                         <div class="feature-text">
                             <h3>DIBUAT DENGAN SEPENUH HATI</h3>
-                            <p>Abon Kedai Pesisir alkani dan dupra pithan yang dolah dengan reese traditionel, menyhasikan rasa gurih kiva pesisir Indonesia.</p>
+                            <p>Abon Kedai Pesisir terbuat dari ikan pilihan yang diolah dengan resep tradisional, menghasilkan cita rasa gurih khas pesisir Indonesia.</p>
                         </div>
                     </div>
                     
@@ -183,7 +172,7 @@
                         </div>
                         <div class="feature-text">
                             <h3>HIGIENIS DAN MURAH</h3>
-                            <p>Setap genak karar dipenas higiene dan targa bulan mengavel, mehiga-rita rasa alane den kusitras kerekli.</p>
+                            <p>"Setiap tahap pengolahan diproses secara higienis guna menjaga kualitas, sehingga menghasilkan cita rasa alami yang konsisten dan berkualitas tinggi.</p>
                         </div>
                     </div>
                     
@@ -195,7 +184,7 @@
                         </div>
                         <div class="feature-text">
                             <h3>DIKEMAS DENGAN MODERN</h3>
-                            <p>Karai hidroartinan menjhasikan zhou kout kengti dengan pengianun capat din kanssan modern yang patak untuk dinlansal kapan sijas.</p>
+                            <p>Dikemas secara modern dan praktis, menjadikannya pilihan sempurna untuk dinikmati kapan pun Anda mau.</p>
                         </div>
                     </div>
                 </div>
@@ -228,11 +217,9 @@
                 
                 <div class="tentang-description">
                     <p>
-                        Di Soubi Postal, kami sentaya bahasi setiap saapan kawa menguhallesi kehittimizin den tuteikan. 
-                        Ompain tahanslektan tehsalt dari terri diri dents, kami menguhallesi diyun yang telah kanya katt, 
-                        tenga yang lepeng dan konsultati, akan kesang yang bengeni jirkan untuk pietayangan yang menzorisi 
-                        cik tota sutantia kaka pelkek. Tentekan kachi kani itu mokana kaigamura tidak iPosefer nembara 
-                        kakszanar untuk kempi adalah dahla.
+                    Di Kedai Pesisir, kami senantiasa menghargai setiap masukan pelanggan guna meningkatkan kualitas dan pelayanan kami.
+                    Dengan komitmen untuk memberikan yang terbaik, kami terus berinovasi melalui tim yang berdedikasi dan konsisten, 
+                    demi memberikan pengalaman yang memuaskan bagi setiap pelanggan. Kepuasan Anda adalah prioritas utama kami.
                     </p>
                 </div>
             </div>
@@ -337,7 +324,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 Abon Sapi. All rights reserved.</p>
+            <p>&copy; 2026 Abon Sapi. All rights reserved.</p>
         </div>
     </div>
 </footer>
@@ -359,21 +346,6 @@
                 window.location.href = "{{ route('login') }}";
             }
         });
-    }
-
-    // Fungsi untuk handle order
-    function handleOrder() {
-        @auth
-            // Logic untuk user yang sudah login
-            Swal.fire({
-                title: 'Pesanan Berhasil!',
-                text: 'Tim kami akan segera menghubungi Anda untuk konfirmasi pesanan.',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            });
-        @else
-            showLoginAlert('melakukan pemesanan');
-        @endauth
     }
 
     feather.replace();

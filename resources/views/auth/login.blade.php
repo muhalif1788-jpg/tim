@@ -123,7 +123,7 @@
                     <div class="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
                         <i class="fas fa-utensils text-blue-500 text-xl"></i>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900">Kedai Pesisir</h3>
+                    <h3 class="text-2xl font-bold text-gray-900">Abon Ummi</h3>
                 </div>
                 
                 <div class="text-center mb-8">
@@ -135,7 +135,7 @@
                 </div>
                 
                 <div class="mt-auto">
-                    <h4 class="text-lg font-semibold text-gray-900 mb-4 text-center">Contact Information</h4>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 text-center">Informasi Kontak</h4>
                     <div class="space-y-2 text-center">
                         <p class="text-gray-700 flex items-center justify-center">
                             <i class="fas fa-phone text-blue-500 mr-2"></i>
@@ -161,7 +161,7 @@
 
         <!-- Footer -->
         <div class="text-center text-gray-500 text-sm mt-6">
-            <p>&copy; 2024 Abon Sapi Premium. All rights reserved.</p>
+            <p>&copy; 2026 Abon Sapi Premium. All rights reserved.</p>
         </div>
     </div>
 

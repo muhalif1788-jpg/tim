@@ -118,7 +118,7 @@
 
         <!-- Footer -->
         <div class="text-center text-gray-500 text-sm mt-6">
-            <p>&copy; 2024 Abon Sapi Premium</p>
+            <p>&copy; 2026 Abon Sapi Premium</p>
         </div>
     </div>
 

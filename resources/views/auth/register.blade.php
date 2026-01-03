@@ -148,7 +148,7 @@
 
         <!-- Footer -->
         <div class="text-center text-gray-500 text-sm mt-6">
-            <p>&copy; 2024 Kedai Pesisir. Semua hak dilindungi.</p>
+            <p>&copy; 2026 Kedai Pesisir. Semua hak dilindungi.</p>
         </div>
     </div>
 

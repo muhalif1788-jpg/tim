@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\DetailTransaksiController;
 use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
 use App\Http\Controllers\Admin\KategoriController;
 use App\Http\Controllers\Admin\TransactionController;
-use App\Http\Controllers\Customer\DashboardCustomer;
 use App\Http\Controllers\Customer\DashboardCustomerController;
 use App\Http\Controllers\Customer\ProductsController as CustomerProdukController;
 use App\Http\Controllers\Customer\CartController;
@@ -51,7 +50,6 @@ Route::middleware(['auth', 'customer'])->group(function () {
     Route::post('/cart/store', [CartController::class, 'store'])->name('cart.store');
     Route::put('/cart/update/{cart}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
-    Route::post('/cart/clear/', [CartController::class, 'clear'])->name('cart.clear');
     Route::get('/cart/count', [CartController::class, 'getCartCount'])->name('cart.count');
 
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('customer.checkout.index');
@@ -61,6 +59,10 @@ Route::middleware(['auth', 'customer'])->group(function () {
     Route::get('/checkout/error', [CheckoutController::class, 'error'])->name('customer.checkout.error');
     Route::get('/checkout/pending', [CheckoutController::class, 'pending'])->name('customer.checkout.pending');
     Route::get('/checkout/invoice/{orderId}', [CheckoutController::class, 'invoice'])->name('customer.checkout.invoice');
+    Route::post('/payment/webhook', [CheckoutController::class, 'webhook'])
+    ->name('payment.webhook')
+    ->withoutMiddleware(['web', 'csrf']);
+
     Route::get('/tentang', function () {return view('tentang-kami.index');})->name('tentang');
     Route::get('/kontak', function () {return view('customer.kontak.index'); })->name('kontak');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');

@@ -1,11 +1,10 @@
-{{-- resources/views/customer/dashboard.blade.php --}}
 @extends('layouts.customer')
 
 @section('title', 'Dashboard - Abon Sapi')
 
 @section('content')
 <div class="dashboard">
-    <!-- Welcome Section (tetap sama) -->
+    <!-- Welcome Section -->
     <div class="welcome-card">
         <div class="welcome-content">
             <h1>Selamat Datang, {{ Auth::user()->name }}! 👋</h1>
@@ -16,7 +15,7 @@
         </div>
     </div>
 
-    <!-- Quick Stats - UPDATE -->
+    <!-- Quick Stats -->
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-icon cart-icon">
@@ -52,7 +51,7 @@
         </div>
     </div>
 
-    <!-- Featured Products (tetap sama) -->
+    <!-- Featured Products -->
     <section class="section featured-products">
         <div class="section-header">
             <h2>Produk Terbaru</h2>
@@ -65,17 +64,39 @@
             <div class="product-card">
                 <div class="product-image">
                     @if($product->gambar)
-                        <img src="{{ asset('storage/' . $product->gambar) }}" alt="{{ $product->nama_produk }}" loading="lazy">
+                        @php
+                            $imagePath = 'storage/' . $product->gambar;
+                            $imageExists = file_exists(public_path($imagePath)) || 
+                                         Storage::disk('public')->exists($product->gambar);
+                        @endphp
+                        @if($imageExists)
+                            <img src="{{ asset($imagePath) }}" 
+                                 alt="{{ $product->nama_produk }}" 
+                                 loading="lazy">
+                        @else
+                            <img src="{{ asset('images/default-product.jpg') }}" 
+                                 alt="{{ $product->nama_produk }}" 
+                                 loading="lazy">
+                        @endif
                     @else
-                        <img src="{{ asset('images/default-product.jpg') }}" alt="{{ $product->nama_produk }}" loading="lazy">
+                        <img src="{{ asset('images/default-product.jpg') }}" 
+                             alt="{{ $product->nama_produk }}" 
+                             loading="lazy">
                     @endif
+                    
                     @if($product->stok == 0)
                         <div class="out-of-stock">Habis</div>
                     @endif
                 </div>
+                
                 <div class="product-info">
                     <h4 class="product-title">{{ Str::limit($product->nama_produk, 40) }}</h4>
                     <p class="product-price">Rp {{ number_format($product->harga, 0, ',', '.') }}</p>
+                    
+                    <div class="product-stock">
+                        <i data-feather="package"></i>
+                        Stok: {{ $product->stok }}
+                    </div>
                     
                     <div class="product-actions">
                         @if($product->stok > 0)
@@ -84,15 +105,16 @@
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                                 <input type="hidden" name="quantity" value="1">
                                 <button type="submit" class="btn-add-to-cart">
-                                    <i data-feather="
-                                    hopping-cart"></i> Tambah ke Keranjang
+                                    <i data-feather="shopping-cart"></i> Tambah ke Keranjang
                                 </button>
                             </form>
                             <a href="{{ route('customer.products.show', $product->id) }}" class="btn-view-detail">
-                                Detail
+                                <i data-feather="eye"></i> Detail
                             </a>
                         @else
-                            <button class="btn-out-of-stock" disabled>Stok Habis</button>
+                            <button class="btn-out-of-stock" disabled>
+                                <i data-feather="x-circle"></i> Stok Habis
+                            </button>
                         @endif
                     </div>
                 </div>
@@ -103,11 +125,14 @@
         <div class="empty-state">
             <i data-feather="package"></i>
             <p>Belum ada produk tersedia</p>
+            <a href="{{ route('customer.products.index') }}" class="btn btn-primary mt-2">
+                Lihat Semua Produk
+            </a>
         </div>
         @endif
     </section>
 
-    <!-- Recent Transactions (ganti Orders dengan Transactions) -->
+    <!-- Recent Transactions -->
     @if(isset($recentTransactions) && $recentTransactions->count() > 0)
     <section class="section recent-transactions">
         <div class="section-header">
@@ -150,7 +175,7 @@
     </section>
     @endif
 
-    <!-- Quick Actions (tambah link ke transaksi) -->
+    <!-- Quick Actions -->
     <div class="quick-actions">
         <a href="{{ route('customer.products.index') }}" class="action-card">
             <div class="action-icon">
@@ -195,14 +220,19 @@
 </div>
 @endsection
 
-@section('styles')
-<style>
-/* Tambah CSS untuk transaction icon */
-.transaction-icon {
-    background: #e3f2fd;
-    color: #1565c0;
-}
+@section('scripts')
+<script>
+// Feather icons
+feather.replace();
 
-/* CSS lainnya tetap sama seperti sebelumnya */
-</style>
+// Pastikan semua image memiliki fallback
+document.addEventListener('DOMContentLoaded', function() {
+    const images = document.querySelectorAll('img');
+    images.forEach(img => {
+        img.onerror = function() {
+            this.src = '{{ asset("images/default-product.jpg") }}';
+        };
+    });
+});
+</script>
 @endsection

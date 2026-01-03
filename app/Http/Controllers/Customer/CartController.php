@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    // Tampilkan cart user yang login
     public function index()
     {
         if (!Auth::check()) {
@@ -27,19 +26,17 @@ class CartController extends Controller
         $total_items = 0;
         
         foreach ($carts as $cart) {
-            if ($cart->produk && $cart->produk->status) {
-                $total += $cart->produk->harga * $cart->quantity;
-                $total_items += $cart->quantity;
+            if ($cart->produk && $cart->produk->status && $cart->produk->stok > 0) {
+                $total += $cart->produk->harga * min($cart->quantity, $cart->produk->stok);
+                $total_items += min($cart->quantity, $cart->produk->stok);
             }
         }
         
         return view('customer.cart.index', compact('carts', 'total', 'total_items'));
     }
 
-    // Tambah produk ke cart
     public function store(Request $request)
     {
-        // Cek login
         if (!Auth::check()) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -50,12 +47,9 @@ class CartController extends Controller
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
         }
 
-        // DEBUG: Log request untuk melihat data yang masuk
-        \Log::info('Cart Store Request:', $request->all());
-
         $request->validate([
-            'produk_id' => 'required|exists:produk,id', // PERBAIKAN: 'produks' bukan 'produk'
-            'quantity' => 'required|integer|min:1|max:99' // PERBAIKAN: 'required' bukan 'nullable'
+            'produk_id' => 'required|exists:produk,id',
+            'quantity' => 'required|integer|min:1'
         ]);
 
         $produk = Produk::where('id', $request->produk_id)
@@ -63,7 +57,6 @@ class CartController extends Controller
                         ->first();
 
         if (!$produk) {
-            \Log::error('Produk tidak ditemukan: ' . $request->produk_id);
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -73,8 +66,9 @@ class CartController extends Controller
             return redirect()->back()->with('error', 'Produk tidak ditemukan atau tidak aktif!');
         }
 
-        // Cek stok
         $quantity = $request->quantity;
+        
+        // Cek stok tersedia
         if ($produk->stok < $quantity) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -91,23 +85,16 @@ class CartController extends Controller
                             ->first();
 
         if ($existingCart) {
-            // Update quantity
             $newQuantity = $existingCart->quantity + $quantity;
             
+            // Cek stok untuk jumlah baru
             if ($produk->stok < $newQuantity) {
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Stok tidak cukup untuk menambah jumlah!'
-                    ], 400);
-                }
-                return redirect()->back()->with('error', 'Stok tidak cukup untuk menambah jumlah!');
+                $newQuantity = $produk->stok; // Batasi dengan stok maksimum
             }
             
             $existingCart->update(['quantity' => $newQuantity]);
             $message = 'Jumlah produk berhasil ditambahkan!';
         } else {
-            // Buat cart baru
             Cart::create([
                 'user_id' => Auth::id(),
                 'produk_id' => $request->produk_id,
@@ -116,18 +103,8 @@ class CartController extends Controller
             $message = 'Produk berhasil ditambahkan ke keranjang!';
         }
 
-        // Hitung total item di cart
         $cart_count = Cart::where('user_id', Auth::id())->sum('quantity');
         
-        // Debug log
-        \Log::info('Cart berhasil ditambahkan:', [
-            'user_id' => Auth::id(),
-            'produk_id' => $request->produk_id,
-            'quantity' => $quantity,
-            'cart_count' => $cart_count
-        ]);
-
-        // Response untuk AJAX request
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -137,72 +114,118 @@ class CartController extends Controller
             ]);
         }
         
-        // Redirect untuk non-AJAX
         return redirect()->back()->with('success', $message);
     }
 
-    // Update quantity
     public function update(Request $request, Cart $cart)
     {
         if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
+            return response()->json([
+                'success' => false,
+                'message' => 'Silakan login terlebih dahulu!'
+            ], 401);
         }
 
         if ($cart->user_id !== Auth::id()) {
-            return redirect()->route('cart.index')->with('error', 'Akses ditolak!');
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak!'
+            ], 403);
         }
 
         $request->validate([
-            'quantity' => 'required|integer|min:1|max:99'
+            'quantity' => 'required|integer|min:1'
         ]);
 
-        if (!$cart->produk || !$cart->produk->status) {
-            return redirect()->route('cart.index')
-                           ->with('error', 'Produk tidak tersedia!');
+        // Periksa stok produk
+        $stokTersedia = $cart->produk->stok;
+        
+        if ($request->quantity > $stokTersedia) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Maaf, stok hanya tersedia ' . $stokTersedia . ' pcs.'
+            ], 400);
         }
 
-        if ($cart->produk->stok < $request->quantity) {
-            return redirect()->back()
-                           ->with('error', 'Stok hanya ' . $cart->produk->stok . ' pcs!');
-        }
-
+        // Update quantity
         $cart->update(['quantity' => $request->quantity]);
 
-        return redirect()->route('cart.index')
-                       ->with('success', 'Jumlah berhasil diubah!');
+        // Hitung ulang total cart
+        $carts = Cart::with('produk')
+                    ->where('user_id', Auth::id())
+                    ->get();
+        
+        $total = 0;
+        $total_items = 0;
+        
+        foreach ($carts as $cartItem) {
+            if ($cartItem->produk && $cartItem->produk->status && $cartItem->produk->stok > 0) {
+                $total += $cartItem->produk->harga * $cartItem->quantity;
+                $total_items += $cartItem->quantity;
+            }
+        }
+        
+        // Hitung shipping dan discount
+        $shipping = $total > 100000 ? 0 : 15000;
+        $discount = $total > 150000 ? $total * 0.1 : 0;
+        $grand_total = $total + $shipping - $discount;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Keranjang diperbarui',
+            'quantity' => $cart->quantity,
+            'cart_count' => $total_items,
+            'summary' => [
+                'subtotal' => $total,
+                'shipping' => $shipping,
+                'discount' => $discount,
+                'grand_total' => $grand_total
+            ]
+        ]);
     }
 
-    // Hapus item dari cart
-    public function destroy(Cart $cart)
+    public function destroy(Request $request, Cart $cart)
     {
         if (!Auth::check()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Silakan login terlebih dahulu!'
+                ], 401);
+            }
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
         }
 
         if ($cart->user_id !== Auth::id()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak!'
+                ], 403);
+            }
             return redirect()->route('cart.index')->with('error', 'Akses ditolak!');
         }
 
+        $cart_id = $cart->id;
         $cart->delete();
+
+        // Hitung ulang setelah delete
+        $carts = Cart::where('user_id', Auth::id())->get();
+        $cart_count = $carts->sum('quantity');
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Produk dihapus dari keranjang!',
+                'cart_id' => $cart_id,
+                'cart_count' => $cart_count
+            ]);
+        }
 
         return redirect()->route('cart.index')
                        ->with('success', 'Produk dihapus dari keranjang!');
     }
 
-    // Kosongkan cart
-    public function clear()
-    {
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
-        }
-
-        Cart::where('user_id', Auth::id())->delete();
-
-        return redirect()->route('cart.index')
-                       ->with('success', 'Keranjang berhasil dikosongkan!');
-    }
-
-    // Hitung item di cart (untuk badge)
     public function getCartCount()
     {
         if (!Auth::check()) {
