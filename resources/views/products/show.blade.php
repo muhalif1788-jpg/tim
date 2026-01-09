@@ -4,7 +4,6 @@
 
 @section('content')
 <div class="product-detail-page">
-    <!-- Product Detail Section -->
     <section class="product-detail-section">
         <div class="container">
             <div class="breadcrumb">
@@ -16,7 +15,6 @@
             </div>
             
             <div class="product-detail-content">
-                <!-- Product Image -->
                 <div class="product-detail-image">
                     @if($produk->gambar)
                         <img src="{{ asset('storage/' . $produk->gambar) }}" alt="{{ $produk->nama_produk }}">
@@ -25,10 +23,32 @@
                     @endif
                 </div>
                 
-                <!-- Product Info -->
                 <div class="product-detail-info">
-                    <h1 class="product-detail-name">{{ $produk->nama_produk }}</h1>
-                    
+                    <h1>{{ $produk->nama_produk }}</h1>
+
+                    <div class="rating-summary-box" style="display: flex; align-items: center; gap: 10px; margin: 15px 0; padding: 10px 0; border-bottom: 1px solid #f3f4f6;">
+                        <div class="stars-row" style="display: flex; color: #fbbf24;">
+                            @php 
+                                $avgRating = $produk->penilaian->avg('rating') ?: 0; 
+                                $totalPenilai = $produk->penilaian->count();
+                            @endphp
+                            
+                            @for($i = 1; $i <= 5; $i++)
+                                <i data-feather="star" style="width: 20px; height: 20px; {{ $i <= round($avgRating) ? 'fill: #fbbf24; color: #fbbf24;' : 'color: #d1d5db;' }}"></i>
+                            @endfor
+                        </div>
+                        
+                        <div style="font-size: 16px; font-weight: bold; color: #1f2937;">
+                            {{ number_format($avgRating, 1) }} <span style="font-weight: normal; color: #6b7280; font-size: 14px;">/ 5.0</span>
+                        </div>
+                        
+                        <div style="height: 15px; width: 1px; background: #d1d5db; margin: 0 5px;"></div>
+                        
+                        <div style="font-size: 14px; color: #4b5563;">
+                            {{ $totalPenilai }} Penilaian Terverifikasi
+                        </div>
+                    </div>
+
                     @if($produk->kategori)
                         <div class="product-category-detail">
                             <span>Kategori:</span>
@@ -56,11 +76,11 @@
                         </div>
                     @endif
                     
-                    <!-- Add to Cart Form -->
                     @if($produk->stok > 0)
                         <form action="{{ route('cart.store') }}" method="POST" class="add-to-cart-form-detail" id="addToCartForm">
                             @csrf
-                            <input type="hidden" name="product_id" value="{{ $produk->id }}">
+                            {{-- PERBAIKAN: name disamakan menjadi produk_id agar konsisten dengan halaman Index --}}
+                            <input type="hidden" name="produk_id" value="{{ $produk->id }}">
                             
                             <div class="quantity-selector">
                                 <label for="quantity">Jumlah:</label>
@@ -101,7 +121,6 @@
                         </div>
                     @endif
                     
-                    <!-- Share Product -->
                     <div class="product-share">
                         <span>Bagikan:</span>
                         <div class="share-buttons">
@@ -119,7 +138,6 @@
                 </div>
             </div>
             
-            <!-- Related Products -->
             @if(isset($relatedProducts) && $relatedProducts->count() > 0)
                 <div class="related-products">
                     <h3 class="section-title">Produk Terkait</h3>
@@ -180,7 +198,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         feather.replace();
         
-        // Add to cart form submission
         const addToCartForm = document.getElementById('addToCartForm');
         if (addToCartForm) {
             addToCartForm.addEventListener('submit', function(e) {
@@ -189,12 +206,10 @@
                 const button = document.getElementById('addToCartBtn');
                 const originalHTML = button.innerHTML;
                 
-                // Show loading state
                 button.innerHTML = '<i data-feather="loader"></i> Menambahkan...';
                 button.disabled = true;
                 feather.replace();
                 
-                // Submit form
                 fetch(this.action, {
                     method: 'POST',
                     body: new FormData(this),
@@ -206,10 +221,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Update cart count in header
                         updateCartCount(data.cartCount);
-                        
-                        // Show success message
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil!',
@@ -234,7 +246,6 @@
                     });
                 })
                 .finally(() => {
-                    // Reset button
                     button.innerHTML = originalHTML;
                     button.disabled = false;
                     feather.replace();
@@ -242,7 +253,6 @@
             });
         }
         
-        // Load initial cart count
         fetch('{{ route("cart.count") }}')
             .then(response => response.json())
             .then(data => {
@@ -252,7 +262,6 @@
             });
     });
     
-    // Quantity control functions
     function decreaseQuantity() {
         const quantityInput = document.getElementById('quantity');
         let value = parseInt(quantityInput.value);
@@ -270,30 +279,24 @@
         }
     }
     
-    // Buy now function
     function buyNow() {
         const form = document.getElementById('addToCartForm');
         if (form) {
-            // Create hidden input for redirect
             const redirectInput = document.createElement('input');
             redirectInput.type = 'hidden';
             redirectInput.name = 'redirect_to';
             redirectInput.value = '{{ route("cart.index") }}';
             form.appendChild(redirectInput);
-            
-            // Submit form
             form.submit();
         }
     }
     
-    // Share product function
     function shareProduct(platform) {
         const url = window.location.href;
         const title = '{{ $produk->nama_produk }}';
         const text = 'Lihat produk ini: {{ $produk->nama_produk }} - Rp {{ number_format($produk->harga, 0, ",", ".") }}';
         
         let shareUrl = '';
-        
         switch(platform) {
             case 'facebook':
                 shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
@@ -311,7 +314,6 @@
         }
     }
     
-    // Update cart count function
     function updateCartCount(count) {
         let cartBadge = document.querySelector('.cart-badge');
         const cartLink = document.querySelector('a[href="{{ route("cart.index") }}"]');
@@ -321,7 +323,7 @@
                 cartBadge = document.createElement('span');
                 cartBadge.className = 'cart-badge';
                 cartBadge.textContent = count;
-                cartLink.appendChild(cartBadge);
+                if(cartLink) cartLink.appendChild(cartBadge);
             } else {
                 cartBadge.textContent = count;
             }
@@ -330,7 +332,6 @@
         }
     }
     
-    // Login alert for non-logged in users
     function showLoginAlert(action) {
         Swal.fire({
             title: 'Login Diperlukan',

@@ -77,4 +77,31 @@ class Produk extends Model
     {
     return $this->hasMany(Cart::class, 'id');
     }
+    public function penilaian()
+    {
+    return $this->hasMany(Penilaian::class, 'produk_id');
+    }
+
+    public function details()
+    {
+    return $this->hasMany(DetailTransaksi::class, 'produk_id');
+    }
+
+    public static function getRecommendations($limit = 4) {
+    // Gunakan 'penilaian' sesuai nama fungsi relasi di atas
+    $globalAvg = \App\Models\Penilaian::avg('rating') ?: 0;
+    $m = 5; 
+
+    return self::withAvg('penilaian as avg_rating', 'rating')
+        ->withCount('details as total_terjual')
+        ->get()
+        ->map(function ($item) use ($globalAvg, $m) {
+            $v = $item->total_terjual;
+            $R = $item->avg_rating ?: 0;
+            $item->bayesian_score = ($v / ($v + $m) * $R) + ($m / ($v + $m) * $globalAvg);
+            return $item;
+        })
+        ->sortByDesc('bayesian_score')
+        ->take($limit);
+    }
 }

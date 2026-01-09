@@ -151,7 +151,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Transaksi::class);
     }
-
+    public function penilaian()
+    {
+        return $this->hasMany(Penilaian::class, 'user_id');
+    }
     // Accessor untuk badge role
     public function getRoleBadgeAttribute()
     {

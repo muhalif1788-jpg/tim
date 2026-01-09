@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abon Sapi - Cita Rasa yang Tak Terlupakan</title>
+    <title>Abon Ummi - Cita Rasa yang Tak Terlupakan</title>
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
@@ -18,8 +18,8 @@
                 <a href="{{ url('/') }}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                     <img src="{{ asset('images/logo.png') }}" alt="LOGO" class="logo-img">
                     <div class="logo-text">
-                        <span class="logo-main">Abon</span>
-                        <span class="logo-sub">Ummi</span>
+                        <span class="logo-main">ABON</span>
+                        <span class="logo-sub">UMMI</span>
                     </div>
                 </a>
             </div>
@@ -101,6 +101,57 @@
 </section>
 
 <!-- Products Section -->
+ <section class="rekomendasi" id="rekomendasi" style="padding-bottom: 0;">
+    <div class="container">
+        <h2 class="section-title">Rekomendasi Untuk Anda</h2>
+        
+        @if(isset($recommendations) && $recommendations->isNotEmpty())
+            <div class="products-grid">
+                @foreach($recommendations as $product)
+                <div class="product-card" style="border: 2px solid #ffc107;">
+                    <div class="product-image">
+                        @if($product->gambar)
+                            <img src="{{ asset('storage/' . $product->gambar) }}" alt="{{ $product->nama_produk }}">
+                        @else
+                            <img src="{{ asset('images/default-product.jpg') }}" alt="{{ $product->nama_produk }}">
+                        @endif
+                        <div style="position: absolute; top: 10px; left: 10px; background: #ffc107; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                            TERLARIS
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                            <i data-feather="star" style="width: 14px; height: 14px; fill: #ffc107; color: #ffc107;"></i>
+                            <span style="font-size: 14px; font-weight: bold;">{{ number_format($product->avg_rating ?? 0, 1) }}</span>
+                            <span style="font-size: 12px; color: #777;">({{ $product->total_terjual ?? 0 }} terjual)</span>
+                        </div>
+                        <h3>{{ $product->nama_produk }}</h3>
+                        <p class="product-price">Rp {{ number_format($product->harga, 0, ',', '.') }}</p>
+                        
+                        @if($product->stok > 0)
+                            @auth
+                                <button class="btn btn-small" onclick="handleOrder()">Beli Sekarang</button>
+                            @else
+                                <button class="btn btn-small" onclick="showLoginAlert('membeli {{ $product->nama_produk }}')">
+                                    Beli Sekarang
+                                </button>
+                            @endauth
+                        @else
+                            <button class="btn btn-small btn-disabled" disabled>Stok Habis</button>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        @else
+            <div class="no-products">
+                <p>Belum ada rekomendasi saat ini.</p>
+            </div>
+        @endif
+    </div>
+</section>
+
+<div style="margin-top: 50px;"></div>
 <section class="produk" id="produk">
     <div class="container">
         <h2 class="section-title">Produk Kami</h2>
@@ -142,7 +193,7 @@
         @endif
     </div>
 </section>
-<!-- Why Kedai Pesisir Section -->
+<!-- Kenapa Harus Abon Umi -->
 <section class="why-section" id="tentang">
     <div class="container">
         <div class="why-content">
@@ -160,7 +211,7 @@
                         </div>
                         <div class="feature-text">
                             <h3>DIBUAT DENGAN SEPENUH HATI</h3>
-                            <p>Abon Kedai Pesisir terbuat dari ikan pilihan yang diolah dengan resep tradisional, menghasilkan cita rasa gurih khas pesisir Indonesia.</p>
+                            <p>Abon Ummi terbuat dari ikan pilihan yang diolah dengan resep tradisional, menghasilkan cita rasa gurih khas Indonesia.</p>
                         </div>
                     </div>
                     
@@ -217,7 +268,7 @@
                 
                 <div class="tentang-description">
                     <p>
-                    Di Kedai Pesisir, kami senantiasa menghargai setiap masukan pelanggan guna meningkatkan kualitas dan pelayanan kami.
+                    Abon Ummi, kami senantiasa menghargai setiap masukan pelanggan guna meningkatkan kualitas dan pelayanan kami.
                     Dengan komitmen untuk memberikan yang terbaik, kami terus berinovasi melalui tim yang berdedikasi dan konsisten, 
                     demi memberikan pengalaman yang memuaskan bagi setiap pelanggan. Kepuasan Anda adalah prioritas utama kami.
                     </p>
@@ -310,21 +361,21 @@
     <div class="container">
         <div class="footer-content">
             <div class="footer-section">
-                <h3>ABON SAPI</h3>
-                <p>Kedai dengan sejuta cita rasa yang tidak terlupakan</p>
+                <h3>ABON UMMI</h3>
+                <p>Abon dengan sejuta cita rasa yang tidak terlupakan</p>
             </div>
             <div class="footer-section">
                 <h3>Kontak</h3>
-                <p>Email: info@abonsapi.com</p>
-                <p>Telp: (021) 1234-5678</p>
+                <p>Email: abonummi@gmail.com</p>
+                <p>Telp: (+62) 82394338184</p>
             </div>
             <div class="footer-section">
                 <h3>Alamat</h3>
-                <p>Jl. Contoh No. 123<br>Jakarta, Indonesia</p>
+                <p>Jl. Keterampilan Cappa Galung Kota Parepare<br>Sulawesi Selatan, Indonesia</p>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 Abon Sapi. All rights reserved.</p>
+            <p>&copy; 2026 Abon Ummi. All rights reserved.</p>
         </div>
     </div>
 </footer>

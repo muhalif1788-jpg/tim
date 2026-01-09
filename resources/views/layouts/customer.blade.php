@@ -32,8 +32,8 @@
                     <a href="{{ url('/dashboard') }}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                         <img src="{{ asset('images/logo.png') }}" alt="LOGO" class="logo-img">
                         <div class="logo-text">
-                            <span class="logo-main">Predict &</span>
-                            <span class="logo-sub">Selenpleapnya</span>
+                            <span class="logo-main">ABON</span>
+                            <span class="logo-sub">UMMI</span>
                         </div>
                     </a>
                 </div>
@@ -250,12 +250,12 @@
                 </div>
                 <div class="footer-section">
                     <h3>Kontak</h3>
-                    <p>Email: info@abonsapi.com</p>
+                    <p>Email: abonummi@gmail.com</p>
                     <p>Telp: (021) 1234-5678</p>
                 </div>
                 <div class="footer-section">
                     <h3>Alamat</h3>
-                    <p>Jl. Contoh No. 123<br>Jakarta, Indonesia</p>
+                    <p>Jl. Keterampilan, Cappagalung, Kec.Bacukiki Barat<br>Parepare, Indonesia</p>
                 </div>
             </div>
             <div class="footer-bottom">

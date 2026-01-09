@@ -51,6 +51,69 @@
         </div>
     </div>
 
+    <section class="section recommendations-section">
+        <div class="section-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h2 style="color: #d97706;">Rekomendasi Khusus Untukmu</h2>
+                <span style="background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 20px; font-size: 12px; font-weight: bold; border: 1px solid #d97706;">BEST SELLER</span>
+            </div>
+        </div>
+
+        @if(isset($recommendations) && $recommendations->count() > 0)
+        <div class="products-grid">
+            @foreach($recommendations as $product)
+            <div class="product-card" style="border: 2px solid #fef3c7; transition: transform 0.3s;">
+                <div class="product-image">
+                    @if($product->gambar)
+                        <img src="{{ asset('storage/' . $product->gambar) }}" alt="{{ $product->nama_produk }}" loading="lazy">
+                    @else
+                        <img src="{{ asset('images/default-product.jpg') }}" alt="{{ $product->nama_produk }}" loading="lazy">
+                    @endif
+                    
+                    <div style="position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.9); padding: 4px 8px; border-radius: 8px; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <i data-feather="star" style="width: 14px; height: 14px; fill: #fbbf24; color: #fbbf24;"></i>
+                        <span style="font-weight: bold; font-size: 13px;">{{ number_format($product->avg_rating ?? 0, 1) }}</span>
+                    </div>
+                </div>
+                
+                <div class="product-info">
+                    <h4 class="product-title">{{ Str::limit($product->nama_produk, 40) }}</h4>
+                    <p class="product-price">Rp {{ number_format($product->harga, 0, ',', '.') }}</p>
+                    
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 10px;">
+                        <i data-feather="award" style="width: 12px; height: 12px; vertical-align: middle;"></i> 
+                        Terjual: <strong>{{ $product->total_terjual ?? 0 }}</strong> pcs
+                    </div>
+                    
+                    <div class="product-actions">
+                        @if($product->stok > 0)
+                            <form action="{{ route('cart.store') }}" method="POST" class="add-to-cart-form" style="flex: 1;">
+                                @csrf
+                                <input type="hidden" name="produk_id" value="{{ $product->id }}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn-add-to-cart" style="background: #e67e22; width: 100%; justify-content: center;">
+                                    <i data-feather="shopping-cart"></i>
+                                </button>
+                            </form>
+
+                            <a href="{{ route('customer.products.show', $product->id) }}" class="btn-view-detail" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                <i data-feather="eye"></i> Detail
+                            </a>
+                        @else
+                            <button class="btn-out-of-stock" disabled style="width: 100%;">
+                                <i data-feather="x-circle"></i> Habis
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif
+    </section>
+    
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
     <!-- Featured Products -->
     <section class="section featured-products">
         <div class="section-header">
@@ -102,7 +165,7 @@
                         @if($product->stok > 0)
                             <form action="{{ route('cart.store') }}" method="POST" class="add-to-cart-form">
                                 @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <input type="hidden" name="produk_id" value="{{ $product->id }}">
                                 <input type="hidden" name="quantity" value="1">
                                 <button type="submit" class="btn-add-to-cart">
                                     <i data-feather="shopping-cart"></i> Tambah ke Keranjang

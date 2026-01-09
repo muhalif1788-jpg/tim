@@ -11,28 +11,31 @@ use App\Http\Controllers\Customer\ProductsController as CustomerProdukController
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\ProfileController;
-use App\Http\Controllers\Customer\OrderController;  
+use App\Http\Controllers\Customer\OrderController;
+use App\Http\Controllers\Customer\PenilaianController;    
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 // ==================== AUTH ROUTES - HARUS PALING ATAS ====================
+// routes/web.php
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
+
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
+
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Lupa Password Routes
 Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])
     ->name('password.request');
-
-// Kirim email reset password
+    
 Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])
     ->name('password.email');
-
-// Form reset password (dengan token)
+    
 Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])
     ->name('password.reset');
-
-// Proses reset password
+    
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])
     ->name('password.update');
 
@@ -76,6 +79,7 @@ Route::middleware(['auth', 'customer'])->group(function () {
     // Orders Routes
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/penilaian', [PenilaianController::class, 'store'])->name('customer.penilaian.store');
     Route::get('/orders/{id}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     Route::get('/orders/{id}/track', [OrderController::class, 'track'])->name('orders.track');
     Route::delete('/orders/{id}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');

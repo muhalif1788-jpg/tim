@@ -10,12 +10,13 @@ return new class extends Migration
     {
         Schema::create('penilaian', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('produk_id');
-            $table->string('nama_penilai');
+            
+            // Gunakan foreignId agar tipe data otomatis SAMA dengan tabel referensinya
+            $table->foreignId('produk_id')->constrained('produk')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            
             $table->tinyInteger('rating'); // skala 1-5
             $table->timestamps();
-
-            $table->foreign('produk_id')->references('id')->on('produk')->onDelete('cascade');
         });
     }
 

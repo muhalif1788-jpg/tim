@@ -702,6 +702,123 @@
     font-size: 12px;
     font-weight: 600;
 }
+/* Tambahkan di file CSS Anda */
+
+/* Search Info */
+.search-info {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-info p {
+    margin: 0;
+    font-size: 16px;
+}
+
+.clear-search {
+    color: #dc3545;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.clear-search:hover {
+    color: #c82333;
+    text-decoration: underline;
+}
+
+/* Sorting Dropdown */
+.sorting-dropdown {
+    margin: 15px 0;
+    text-align: right;
+}
+
+.sort-select {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.sort-select:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+/* Products Header */
+.products-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.products-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+/* Product Description Short */
+.product-description-short {
+    font-size: 14px;
+    color: #666;
+    margin: 8px 0;
+    line-height: 1.4;
+    height: 40px;
+    overflow: hidden;
+}
+
+/* Pagination */
+.pagination {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.pagination .pagination {
+    display: inline-flex;
+}
+
+/* No Products */
+.no-products {
+    text-align: center;
+    padding: 50px 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 30px 0;
+}
+
+.no-products p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .products-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .sorting-dropdown {
+        width: 100%;
+        text-align: left;
+    }
+    
+    .sort-select {
+        width: 100%;
+    }
+}
 
 /* Solusi 3: Atur grid responsif yang lebih baik */
 @media (min-width: 768px) {

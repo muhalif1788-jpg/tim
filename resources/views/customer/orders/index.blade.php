@@ -4,6 +4,27 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/orders.css') }}">
+<style>
+    /* Rating Styles */
+    .rating-container { margin-top: 10px; }
+    .rating-stars { display: flex; gap: 5px; margin-bottom: 5px; }
+    .rating-star { color: #ddd; cursor: pointer; transition: color 0.2s; font-size: 20px; }
+    .rating-star.active { color: #ffc107; }
+    .btn-rating { 
+        background: #f8f9fa; border: 1px solid #dee2e6; color: #6c757d;
+        padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer;
+        display: inline-flex; align-items: center; gap: 5px;
+    }
+    .rating-form { 
+        background: #f1f3f5; padding: 15px; border-radius: 8px; 
+        margin-top: 10px; border: 1px dashed #adb5bd;
+    }
+    .rating-form-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
+    .already-rated { color: #28a745; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 5px; margin-top: 5px; }
+    .badge { padding: 5px 10px; border-radius: 4px; font-size: 12px; }
+    .status-selesai { background: #dcfce7; color: #155724; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+</style>
 @endsection
 
 @section('content')
@@ -13,273 +34,138 @@
         <p>Riwayat dan status pesanan Anda</p>
     </div>
 
-    @if($transactions && $transactions->count() > 0)
-        <!-- Filter Tab -->
-        <div class="orders-tabs">
-            <button class="tab-btn active" data-filter="all">Semua ({{ $transactions->total() }})</button>
-            <button class="tab-btn" data-filter="pending">Menunggu Pembayaran</button>
-            <button class="tab-btn" data-filter="processing">Diproses</button>
-            <button class="tab-btn" data-filter="shipped">Dikirim</button>
-            <button class="tab-btn" data-filter="completed">Selesai</button>
+    {{-- Pesan Feedback --}}
+    @if(session('success'))
+        <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+            {{ session('success') }}
         </div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+            {{ session('error') }}
+        </div>
+    @endif
 
-        <!-- Orders List -->
+    @if($transactions && $transactions->count() > 0)
         <div class="orders-list">
             @foreach($transactions as $transaction)
-            <div class="order-card" data-status="{{ $transaction->status }}">
-                <div class="order-header">
+            <div class="order-card" style="background: white; border: 1px solid #eee; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <div class="order-header" style="display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 15px;">
                     <div class="order-info">
-                        <div class="order-id">
-                            <h3>Order #{{ $transaction->order_id }}</h3>
-                            <span class="order-date">
-                                <i data-feather="calendar"></i>
-                                {{ $transaction->created_at->format('d M Y, H:i') }}
-                            </span>
-                        </div>
-                        
-                        <div class="order-status-badge status-{{ $transaction->status }}">
-                            @switch($transaction->status)
-                                @case('pending')
-                                    <i data-feather="clock"></i> Menunggu Pembayaran
-                                    @break
-                                @case('processing')
-                                    <i data-feather="package"></i> Diproses
-                                    @break
-                                @case('shipped')
-                                    <i data-feather="truck"></i> Dikirim
-                                    @break
-                                @case('completed')
-                                    <i data-feather="check-circle"></i> Selesai
-                                    @break
-                                @case('expired')
-                                    <i data-feather="x-circle"></i> Kadaluarsa
-                                    @break
-                                @case('cancelled')
-                                    <i data-feather="x-circle"></i> Dibatalkan
-                                    @break
-                                @default
-                                    <i data-feather="help-circle"></i> {{ $transaction->status }}
-                            @endswitch
-                        </div>
+                        <h3 style="margin: 0; font-size: 16px;">Order #{{ $transaction->order_id }}</h3>
+                        <span class="order-date" style="font-size: 12px; color: #888;">{{ $transaction->created_at->format('d M Y, H:i') }}</span>
+                        <span class="badge status-{{ $transaction->status }}">{{ ucfirst($transaction->status) }}</span>
                     </div>
-                    
                     <div class="order-total">
-                        <span class="total-label">Total</span>
-                        <span class="total-amount">Rp {{ number_format($transaction->total_harga, 0, ',', '.') }}</span>
+                        <span class="total-amount" style="font-weight: bold; color: #294066;">Rp {{ number_format($transaction->total_harga, 0, ',', '.') }}</span>
                     </div>
                 </div>
 
-                <!-- Order Items -->
                 <div class="order-items">
-                    @php
-                        $items = $transaction->detailTransaksi ?? [];
-                    @endphp
-                    
-                    @if($items && count($items) > 0)
-                        @foreach($items as $item)
-                        <div class="order-item">
-                            <div class="item-image">
-                                @if($item->produk && $item->produk->images && $item->produk->images->first())
-                                    <img src="{{ asset('storage/' . $item->produk->images->first()->image_path) }}" 
-                                         alt="{{ $item->produk->nama }}">
-                                @else
-                                    <div class="no-image">
-                                        <i data-feather="image"></i>
-                                    </div>
+                    {{-- Ganti ke 'details' sesuai permintaan --}}
+                    @foreach($transaction->details as $item)
+                    <div class="order-item" style="border-bottom: 1px solid #f9f9f9; padding: 15px 0; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="item-details">
+                            {{-- Ganti ke 'nama_produk' sesuai struktur tabel Anda --}}
+                            <h4 style="margin: 0 0 5px 0; font-size: 14px;">{{ $item->produk->nama_produk ?? 'Produk Tidak Ditemukan' }}</h4>
+                            <p style="margin: 0; color: #666; font-size: 13px;">{{ $item->jumlah }} x Rp {{ number_format($item->harga_saat_ini, 0, ',', '.') }}</p>
+                            
+                            <div class="rating-section" style="margin-top: 10px;">
+                                {{-- Hanya jika status 'selesai' atau 'completed' --}}
+                                @if(in_array($transaction->status, ['selesai', 'completed']))
+                                    @php
+                                        $sudahRating = \App\Models\Penilaian::where('user_id', auth()->id())
+                                                        ->where('produk_id', $item->produk_id)
+                                                        ->exists();
+                                    @endphp
+
+                                    @if(!$sudahRating)
+                                        <button class="btn-rating" id="btn-show-{{ $item->id }}" onclick="showRatingForm({{ $item->id }})">
+                                            <i data-feather="star" style="width: 14px;"></i> Beri Rating
+                                        </button>
+
+                                        <div class="rating-form" id="rating-form-{{ $item->id }}" style="display: none;">
+                                            <form action="{{ route('customer.penilaian.store') }}" method="POST">
+                                                @csrf
+                                                <input type="hidden" name="produk_id" value="{{ $item->produk_id }}">
+                                                <input type="hidden" name="rating" id="rating-input-{{ $item->id }}" value="" required>
+
+                                                <p style="margin-bottom: 8px; font-size: 12px; font-weight: bold;">Kualitas Produk:</p>
+                                                <div class="rating-stars">
+                                                    @for($i = 1; $i <= 5; $i++)
+                                                        <span class="rating-star star-icon-{{ $item->id }}" 
+                                                              onclick="setRatingValue({{ $item->id }}, {{ $i }})">
+                                                            <i data-feather="star"></i>
+                                                        </span>
+                                                    @endfor
+                                                </div>
+
+                                                <div class="rating-form-buttons">
+                                                    <button type="button" class="btn-secondary" onclick="hideRatingForm({{ $item->id }})" style="background: none; border: 1px solid #ccc; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Batal</button>
+                                                    <button type="submit" class="btn-primary" style="background:#28a745; color:white; border:none; padding: 5px 15px; border-radius:4px; cursor:pointer; font-weight: bold;">Kirim</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    @else
+                                        <div class="already-rated">
+                                            <i data-feather="check-circle" style="width: 14px;"></i> Sudah Dinilai
+                                        </div>
+                                    @endif
                                 @endif
                             </div>
-                            
-                            <div class="item-details">
-                                <h4>{{ $item->produk->nama ?? 'Produk Tidak Ditemukan' }}</h4>
-                                <div class="item-meta">
-                                    <span class="item-price">
-                                        Rp {{ number_format($item->harga_saat_ini, 0, ',', '.') }}
-                                    </span>
-                                    <span class="item-quantity">× {{ $item->jumlah }}</span>
-                                    <span class="item-subtotal">
-                                        Rp {{ number_format($item->subtotal, 0, ',', '.') }}
-                                    </span>
-                                </div>
-                            </div>
                         </div>
-                        @endforeach
-                    @else
-                        <div class="empty-items">
-                            <i data-feather="package"></i>
-                            <p>Detail produk tidak tersedia</p>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Order Actions -->
-                <div class="order-actions">
-                    @if($transaction->status === 'pending')
-                        <a href="{{ route('customer.checkout.payment') }}" class="btn-pay">
-                            <i data-feather="credit-card"></i> Bayar Sekarang
-                        </a>
                         
-                        <button class="btn-cancel" onclick="cancelOrder('{{ $transaction->id }}', '{{ $transaction->order_id }}')">
-                            <i data-feather="x-circle"></i> Batalkan
-                        </button>
-                    @endif
-                    
-                    @if($transaction->status === 'shipped')
-                        <button class="btn-track" onclick="trackOrder('{{ $transaction->id }}')">
-                            <i data-feather="truck"></i> Lacak Pengiriman
-                        </button>
-                    @endif
-                    
-                    <a href="{{ route('orders.show', $transaction->id) }}" class="btn-detail">
-                        <i data-feather="eye"></i> Detail Pesanan
-                    </a>
-                    
-                    @if(in_array($transaction->status, ['completed', 'shipped']))
-                        <a href="{{ route('customer.checkout.invoice', $transaction->order_id) }}" 
-                           target="_blank" class="btn-invoice">
-                            <i data-feather="file-text"></i> Invoice
-                        </a>
-                    @endif
+                        <a href="{{ route('orders.show', $transaction->id) }}" style="text-decoration: none; font-size: 13px; color: #294066; font-weight: bold;"> Detail > </a>
+                    </div>
+                    @endforeach
                 </div>
             </div>
             @endforeach
         </div>
-
-        <!-- Pagination -->
-        @if($transactions->hasPages())
-        <div class="pagination">
+        <div class="pagination" style="margin-top: 20px;">
             {{ $transactions->links() }}
         </div>
-        @endif
     @else
-        <!-- Empty State -->
-        <div class="empty-orders">
-            <div class="empty-icon">
-                <i data-feather="shopping-bag"></i>
-            </div>
-            <h3>Belum ada pesanan</h3>
-            <p>Mulai belanja dan pesanan Anda akan muncul di sini</p>
-            <a href="{{ route('customer.products.index') }}" class="btn-shop">
-                <i data-feather="shopping-cart"></i> Mulai Belanja
-            </a>
+        <div class="empty-orders" style="text-align:center; padding: 80px 20px; background: white; border-radius: 12px;">
+            <i data-feather="shopping-bag" style="width:64px; height:64px; color:#ddd; margin-bottom: 20px;"></i>
+            <h3 style="color: #333;">Belum ada pesanan</h3>
+            <p style="color: #888; margin-bottom: 25px;">Sepertinya Anda belum melakukan transaksi apapun.</p>
+            <a href="{{ url('/products') }}" class="btn-primary" style="background: #294066; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold;">Mulai Belanja</a>
         </div>
     @endif
-</div>
-
-<!-- Cancel Order Modal -->
-<div class="modal" id="cancelModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Batalkan Pesanan</h3>
-            <button class="modal-close" onclick="closeModal()">
-                <i data-feather="x"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <p>Apakah Anda yakin ingin membatalkan pesanan <strong id="cancelOrderId"></strong>?</p>
-            <div class="modal-actions">
-                <button class="btn-secondary" onclick="closeModal()">Batal</button>
-                <button class="btn-danger" id="confirmCancel">Ya, Batalkan</button>
-            </div>
-        </div>
-    </div>
 </div>
 @endsection
 
 @section('scripts')
 <script>
     feather.replace();
-    
-    let currentOrderId = null;
-    
-    // Tab Filter
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            const filter = this.dataset.filter;
-            document.querySelectorAll('.order-card').forEach(card => {
-                if (filter === 'all' || card.dataset.status === filter) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
-    });
-    
-    // Cancel Order
-    function cancelOrder(orderId, orderNumber) {
-        currentOrderId = orderId;
-        document.getElementById('cancelOrderId').textContent = orderNumber;
-        document.getElementById('cancelModal').style.display = 'flex';
+
+    function showRatingForm(itemId) {
+        document.getElementById(`rating-form-${itemId}`).style.display = 'block';
+        document.getElementById(`btn-show-${itemId}`).style.display = 'none';
     }
-    
-    // Confirm Cancel
-    document.getElementById('confirmCancel').addEventListener('click', function() {
-        if (!currentOrderId) return;
-        
-        fetch(`/customer/orders/${currentOrderId}/cancel`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    title: 'Berhasil!',
-                    text: 'Pesanan berhasil dibatalkan',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => {
-                    location.reload();
-                });
+
+    function hideRatingForm(itemId) {
+        document.getElementById(`rating-form-${itemId}`).style.display = 'none';
+        document.getElementById(`btn-show-${itemId}`).style.display = 'inline-flex';
+    }
+
+    function setRatingValue(itemId, val) {
+        document.getElementById(`rating-input-${itemId}`).value = val;
+
+        const stars = document.querySelectorAll(`.star-icon-${itemId}`);
+        stars.forEach((star, index) => {
+            const svg = star.querySelector('svg');
+            if (index < val) {
+                star.classList.add('active');
+                svg.style.fill = '#ffc107';
+                svg.style.color = '#ffc107';
             } else {
-                Swal.fire({
-                    title: 'Gagal!',
-                    text: data.message || 'Terjadi kesalahan',
-                    icon: 'error'
-                });
+                star.classList.remove('active');
+                svg.style.fill = 'none';
+                svg.style.color = '#ddd';
             }
-            closeModal();
-        })
-        .catch(error => {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Terjadi kesalahan',
-                icon: 'error'
-            });
-            closeModal();
-        });
-    });
-    
-    // Track Order
-    function trackOrder(orderId) {
-        Swal.fire({
-            title: 'Lacak Pengiriman',
-            html: `Fitur pelacakan pengiriman akan segera tersedia<br><br>
-                   Untuk informasi pengiriman, silakan hubungi customer service.`,
-            icon: 'info',
-            confirmButtonText: 'OK'
         });
     }
-    
-    // Modal Functions
-    function closeModal() {
-        document.getElementById('cancelModal').style.display = 'none';
-        currentOrderId = null;
-    }
-    
-    // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('cancelModal');
-        if (event.target === modal) {
-            closeModal();
-        }
-    });
 </script>
 @endsection

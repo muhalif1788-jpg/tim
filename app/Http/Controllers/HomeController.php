@@ -9,12 +9,13 @@ class HomeController extends Controller
 {
     public function index()
     {
-
-        $produk = Produk::where('status', true)
-            ->orderBy('created_at', 'desc')
-            ->take(20)
-            ->get();
+        // Ambil data rekomendasi
+        $recommendations = Produk::getRecommendations(4);
+        
+        // Ambil semua produk - Ubah nama variabel dari $products menjadi $produk
+        $produk = Produk::where('status', true)->get(); 
     
-        return view('app', compact('produk'));
+        // Kirim ke view dengan nama 'produk'
+        return view('app', compact('recommendations', 'produk'));
     }
 }

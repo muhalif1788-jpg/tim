@@ -9,11 +9,11 @@ use Illuminate\Http\Request;
 
 class ProductsController extends Controller
 {
-
     public function index(Request $request)
     {
+        $recommendations = Produk::getRecommendations(4);
         // Hanya produk yang status aktif dan stok tersedia
-        $query = Produk::with('kategori')
+        $query = Produk::with('kategori', 'penilaian')
             ->where('status', true)
             ->where('stok', '>', 0);
 
@@ -22,7 +22,7 @@ class ProductsController extends Controller
             $query->where('kategori_id', $request->kategori);
         }
 
-        // Search
+        // Search - PERBAIKAN: Tambahkan parameter search ke query string
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -53,7 +53,7 @@ class ProductsController extends Controller
         $produk = $query->paginate(12);
         $kategoris = Kategori::all();
 
-        return view('products.index', compact('produk', 'kategoris'));
+        return view('products.index', compact('produk', 'kategoris', 'recommendations'));
     }
 
     /**
@@ -61,13 +61,13 @@ class ProductsController extends Controller
      */
     public function show($id)
     {
-        $produk = Produk::with('kategori')
+        $produk = Produk::with('kategori', 'penilaian.user')
             ->where('status', true)
             ->where('stok', '>', 0)
             ->findOrFail($id);
 
         // Produk terkait (dari kategori yang sama)
-        $relatedProducts = Produk::with('kategori')
+        $relatedProducts = Produk::with('kategori', 'penilaian')
             ->where('status', true)
             ->where('stok', '>', 0)
             ->where('kategori_id', $produk->kategori_id)
@@ -78,24 +78,12 @@ class ProductsController extends Controller
         return view('products.show', compact('produk', 'relatedProducts'));
     }
 
-    /**
-     * Search produk untuk customer
-     */
+
     public function search(Request $request)
     {
-        $query = $request->get('q');
-        
-        $produk = Produk::with('kategori')
-            ->where('status', true)
-            ->where('stok', '>', 0)
-            ->where(function($q) use ($query) {
-                $q->where('nama_produk', 'like', "%{$query}%")
-                  ->orWhere('deskripsi', 'like', "%{$query}%");
-            })
-            ->paginate(12);
-
-        $kategoris = Kategori::all();
-
-        return view('products.search', compact('produk', 'kategoris', 'query'));
+        // Redirect ke index dengan parameter search
+        return redirect()->route('customer.products.index', [
+            'search' => $request->get('q')
+        ]);
     }
 }

@@ -18,7 +18,7 @@
                     <div class="mx-auto w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mb-4">
                         <i class="fas fa-store text-white text-2xl"></i>
                     </div>
-                    <h2 class="text-3xl font-bold text-gray-900">Abon Sapi Premium</h2>
+                    <h2 class="text-3xl font-bold text-gray-900">Abon Ummi</h2>
                     <p class="mt-2 text-gray-600">Silakan login ke akun Anda</p>
                 </div>
 
@@ -123,12 +123,12 @@
                     <div class="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
                         <i class="fas fa-utensils text-blue-500 text-xl"></i>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900">Abon Ummi</h3>
+                    <h3 class="text-2xl font-bold text-gray-900">Abon Premium</h3>
                 </div>
                 
                 <div class="text-center mb-8">
                     <p class="text-gray-700 leading-relaxed">
-                        Kedai pesisir Abon UmmI menghadirkan abon yang tidak hanya lezat tetapi juga bergizi. 
+                        Abon Ummi menghadirkan abon yang tidak hanya lezat tetapi juga bergizi. 
                         Terbuat dari bahan-bahan pilihan terbaik, kami menghadirkan cita rasa autentik 
                         dan keseimbangan nutrisi di setiap sajian.
                     </p>
@@ -139,11 +139,11 @@
                     <div class="space-y-2 text-center">
                         <p class="text-gray-700 flex items-center justify-center">
                             <i class="fas fa-phone text-blue-500 mr-2"></i>
-                            +62 0000000000
+                            +62 82394338184
                         </p>
                         <p class="text-gray-700 flex items-center justify-center">
                             <i class="fas fa-envelope text-blue-500 mr-2"></i>
-                            alif@mail.com
+                            abonummi@gmail.com
                         </p>
                     </div>
                 </div>
@@ -161,7 +161,7 @@
 
         <!-- Footer -->
         <div class="text-center text-gray-500 text-sm mt-6">
-            <p>&copy; 2026 Abon Sapi Premium. All rights reserved.</p>
+            <p>&copy; 2026 Abon Ummi. All rights reserved.</p>
         </div>
     </div>
 

@@ -18,10 +18,12 @@ class DashboardCustomerController extends Controller
     
     public function index()
     {
+        $recommendations = Produk::getRecommendations(4);
         $user_id = Auth::id();
         
         // Data dasar dengan Transaksi
         $data = [
+            'recommendations' => $recommendations,
             'cartCount' => $this->getCartCount($user_id),
             'transactionCount' => $this->getActiveTransactionCount($user_id), 
             'productCount' => $this->getAvailableProductCount(),

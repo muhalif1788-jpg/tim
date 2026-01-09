@@ -43,6 +43,10 @@ header {
     color: #8B4513;
 }
 
+.logo img {
+   width: 300px !important; 
+    height: auto;
+}
 .logo a {
     text-decoration: none;
     color: inherit;
@@ -76,31 +80,6 @@ nav ul li a.active {
 }
 
 /* Hero Section */
-.hero {
-    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('../images/hero-bg.jpg') no-repeat center center/cover;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    color: white;
-    text-align: center;
-    margin-top: 60px;
-}
-
-.hero-content {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.hero h1 {
-    font-size: 48px;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-}
-
-.hero p {
-    font-size: 20px;
-    margin-bottom: 30px;
-}
 
 .btn {
     display: inline-block;

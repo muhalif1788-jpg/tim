@@ -1,5 +1,4 @@
 <?php
-// app/Models/Transaksi.php
 
 namespace App\Models;
 
@@ -23,6 +22,7 @@ class Transaksi extends Model
         'biaya_pengiriman',
         'biaya_admin',
         'total_harga',
+        'metode_pengiriman', 
         'nama_penerima',
         'telepon_penerima',
         'alamat_pengiriman',
@@ -46,12 +46,21 @@ class Transaksi extends Model
         'alamat_pengiriman' => 'encrypted',
     ];
 
+    public function isPickup()
+    {
+        return $this->metode_pengiriman === 'pickup';
+    }
+
+    public function isDelivery()
+    {
+        return $this->metode_pengiriman === 'delivery';
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-  
     public function details()
     {
         return $this->hasMany(DetailTransaksi::class, 'transaksi_id');

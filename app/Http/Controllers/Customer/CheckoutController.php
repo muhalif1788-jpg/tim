@@ -29,7 +29,9 @@ class CheckoutController extends Controller
         }
 
         $subtotal = $carts->sum(fn ($cart) => $cart->produk->harga * $cart->quantity);
-        $biaya_pengiriman = 10000;
+        
+        // Default awal tampilan (Delivery)
+        $biaya_pengiriman = 10000; 
         $biaya_admin = 2000;
         $total = $subtotal + $biaya_pengiriman + $biaya_admin;
 
@@ -38,13 +40,17 @@ class CheckoutController extends Controller
         ));
     }
 
+    /**
+     * Memproses Input Form Checkout ke Session
+     */
     public function store(Request $request)
     {
         $request->validate([
-            'nama_penerima' => 'nullable',
-            'alamat' => 'nullable',
-            'no_telepon' => 'nullable',
-            'catatan' => 'nullable',
+            'nama_penerima' => 'required|string|max:255',
+            'no_telepon' => 'required|string|max:20',
+            'alamat' => 'required|string',
+            'metode_pengiriman' => 'required|in:delivery,pickup',
+            'catatan' => 'nullable|string',
         ]);
 
         $user = Auth::user();
@@ -55,24 +61,25 @@ class CheckoutController extends Controller
         }
 
         $subtotal = $carts->sum(fn ($cart) => $cart->produk->harga * $cart->quantity);
-        $biaya_pengiriman = 10000;
+        
+        // Logika Biaya Pengiriman
+        $biaya_pengiriman = ($request->metode_pengiriman === 'delivery') ? 10000 : 0;
         $biaya_admin = 2000;
         $total = $subtotal + $biaya_pengiriman + $biaya_admin;
 
-        // Simpan data keranjang ke session sebagai backup
-        $cartBackup = $carts->map(function ($cart) {
-            return [
-                'id' => $cart->id,
-                'produk_id' => $cart->produk_id,
-                'quantity' => $cart->quantity,
-            ];
-        })->toArray();
+        // Backup data keranjang untuk keperluan restore jika bayar gagal
+        $cartBackup = $carts->map(fn($cart) => [
+            'id' => $cart->id,
+            'produk_id' => $cart->produk_id,
+            'quantity' => $cart->quantity,
+        ])->toArray();
 
         session([
             'checkout_data' => [
-                'nama' => $request->nama_penerima ?? $user->name,
-                'alamat' => $request->alamat ?? $user->alamat ?? '',
-                'telepon' => $request->no_telepon ?? $user->telepon ?? '',
+                'nama' => $request->nama_penerima,
+                'alamat' => $request->alamat,
+                'telepon' => $request->no_telepon,
+                'metode_pengiriman' => $request->metode_pengiriman,
                 'catatan' => $request->catatan,
                 'subtotal' => $subtotal,
                 'biaya_pengiriman' => $biaya_pengiriman,
@@ -80,35 +87,37 @@ class CheckoutController extends Controller
                 'total' => $total,
                 'email' => $user->email,
             ],
-            'cart_items' => $carts->map(function ($cart) {
-                return [
-                    'produk_id' => $cart->produk_id,
-                    'produk_nama' => $cart->produk->nama ?? 'Unknown Product',
-                    'harga' => $cart->produk->harga ?? 0,
-                    'quantity' => $cart->quantity,
-                    'subtotal' => ($cart->produk->harga ?? 0) * $cart->quantity,
-                ];
-            })->toArray(),
-            'cart_backup' => $cartBackup // Simpan backup keranjang
+            'cart_items' => $carts->map(fn($cart) => [
+                'produk_id' => $cart->produk_id,
+                'produk_nama' => $cart->produk->nama_produk, // PERBAIKAN: ganti dari 'nama' ke 'nama_produk'
+                'harga' => $cart->produk->harga,
+                'quantity' => $cart->quantity,
+                'subtotal' => $cart->produk->harga * $cart->quantity,
+            ])->toArray(),
+            'cart_backup' => $cartBackup
         ]);
 
         return redirect()->route('customer.checkout.payment');
     }
 
+    /**
+     * Membuat Transaksi di DB & Mendapatkan Snap Token Midtrans
+     */
     public function payment()
     {
-        if (!session()->has('checkout_data') || !session()->has('cart_items')) {
-            return redirect()->route('customer.checkout.index')->with('error', 'Data checkout tidak lengkap.');
+        if (!session()->has('checkout_data')) {
+            return redirect()->route('customer.checkout.index')->with('error', 'Sesi kedaluwarsa.');
         }
 
         $checkout = session('checkout_data');
         $user = Auth::user();
 
         try {
-            // 1. Generate Order ID
-            $orderId = 'ORDER-' . date('YmdHis') . '-' . rand(1000, 9999);
+            DB::beginTransaction();
+
+            $orderId = 'ABON-' . date('YmdHis') . '-' . rand(1000, 9999);
             
-            // 2. Save to database
+            // 1. Simpan Transaksi Ke Database
             $transaksi = Transaksi::create([
                 'user_id' => $user->id,
                 'order_id' => $orderId,
@@ -116,6 +125,7 @@ class CheckoutController extends Controller
                 'biaya_pengiriman' => $checkout['biaya_pengiriman'],
                 'biaya_admin' => $checkout['biaya_admin'],
                 'total_harga' => $checkout['total'],
+                'metode_pengiriman' => $checkout['metode_pengiriman'],
                 'nama_penerima' => $checkout['nama'],
                 'telepon_penerima' => $checkout['telepon'],
                 'alamat_pengiriman' => $checkout['alamat'],
@@ -124,36 +134,85 @@ class CheckoutController extends Controller
                 'expired_at' => now()->addHours(24),
             ]);
 
-            // Simpan detail transaksi
-            $cartItems = session('cart_items', []);
-            
-            DB::beginTransaction();
-            try {
-                foreach ($cartItems as $item) {
-                    DetailTransaksi::create([
-                        'transaksi_id' => $transaksi->id,
-                        'produk_id' => $item['produk_id'],
-                        'harga_saat_ini' => $item['harga'],
-                        'jumlah' => $item['quantity'],
-                        'subtotal' => $item['subtotal'],
-                    ]);
-                }
-                DB::commit();
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw new \Exception('Gagal menyimpan detail transaksi: ' . $e->getMessage());
+            // 2. Simpan Detail Produk
+            foreach (session('cart_items') as $item) {
+                DetailTransaksi::create([
+                    'transaksi_id' => $transaksi->id,
+                    'produk_id' => $item['produk_id'],
+                    'harga_saat_ini' => $item['harga'],
+                    'jumlah' => $item['quantity'],
+                    'subtotal' => $item['subtotal'],
+                ]);
             }
 
-            // 3. Prepare Midtrans parameters
+            // 3. Siapkan Item Details untuk Midtrans (PERBAIKAN DI SINI)
+            $item_details = [];
+            $calculated_total = 0; // Untuk memastikan perhitungan benar
+
+            foreach (session('cart_items') as $item) {
+                // PERBAIKAN 1: Pastikan nama tidak null/kosong
+                $product_name = !empty($item['produk_nama']) ? $item['produk_nama'] : 'Produk ' . $item['produk_id'];
+                
+                $item_detail = [
+                    'id' => (string)$item['produk_id'],
+                    'price' => (int)$item['harga'],
+                    'quantity' => (int)$item['quantity'],
+                    'name' => substr($product_name, 0, 50), // Max 50 karakter
+                ];
+                
+                $item_details[] = $item_detail;
+                $calculated_total += ($item['harga'] * $item['quantity']);
+            }
+
+            // PERBAIKAN 2: Pastikan biaya pengiriman dan admin dimasukkan sebagai item
+            if ($checkout['biaya_pengiriman'] > 0) {
+                $item_details[] = [
+                    'id' => 'SHIPPING',
+                    'price' => (int)$checkout['biaya_pengiriman'],
+                    'quantity' => 1,
+                    'name' => 'Biaya Pengiriman',
+                ];
+                $calculated_total += $checkout['biaya_pengiriman'];
+            }
+
+            $item_details[] = [
+                'id' => 'ADMIN',
+                'price' => (int)$checkout['biaya_admin'],
+                'quantity' => 1,
+                'name' => 'Biaya Layanan',
+            ];
+            $calculated_total += $checkout['biaya_admin'];
+
+            // PERBAIKAN 3: Pastikan gross_amount sama dengan jumlah item_details
+            // Gunakan calculated_total untuk memastikan kesamaan
+            $gross_amount = $calculated_total;
+
+            // Debug log untuk memeriksa perhitungan
+            Log::info('Midtrans Calculation', [
+                'checkout_total' => $checkout['total'],
+                'calculated_total' => $calculated_total,
+                'gross_amount' => $gross_amount,
+                'item_count' => count($item_details)
+            ]);
+
             $params = [
                 'transaction_details' => [
                     'order_id' => $orderId,
-                    'gross_amount' => (int) $checkout['total'],
+                    'gross_amount' => $gross_amount, // PERBAIKAN: gunakan calculated total
                 ],
+                'item_details' => $item_details,
                 'customer_details' => [
                     'first_name' => $checkout['nama'],
                     'email' => $user->email,
                     'phone' => $checkout['telepon'],
+                    'shipping_address' => [
+                        'first_name' => $checkout['nama'],
+                        'phone' => $checkout['telepon'],
+                        'address' => $checkout['alamat'],
+                        'city' => 'Unknown',
+                        'postal_code' => '00000',
+                        'country_code' => 'IDN',
+                    ],
                 ],
                 'callbacks' => [
                     'finish' => url("/checkout/finish/{$orderId}"),
@@ -161,14 +220,8 @@ class CheckoutController extends Controller
                 ]
             ];
 
-            // 4. Get Server Key from .env
+            // 4. Request Snap Token ke Midtrans
             $serverKey = env('MIDTRANS_SERVER_KEY');
-            
-            if (empty($serverKey)) {
-                throw new \Exception('Server Key tidak ditemukan di .env');
-            }
-
-            // 5. Generate Snap Token
             $authString = base64_encode($serverKey . ':');
             
             $ch = curl_init();
@@ -186,161 +239,92 @@ class CheckoutController extends Controller
             ]);
             
             $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            
-            if ($httpCode !== 201) {
-                throw new \Exception("Midtrans API Error: HTTP {$httpCode} - " . $response);
-            }
-            
             $result = json_decode($response);
-            $snapToken = $result->token;
+            curl_close($ch);
+
+            if (!isset($result->token)) {
+                // Log error response dari Midtrans
+                Log::error('Midtrans Error Response: ' . $response);
+                throw new \Exception("Midtrans Error: " . $response);
+            }
+
+            $transaksi->update(['snap_token' => $result->token]);
             
-            // 6. Update transaction with token
-            $transaksi->update(['snap_token' => $snapToken]);
-            
-            // 7. TIDAK ADA PENGHAPUSAN KERANJANG DI SINI!
-            // Keranjang akan dihapus nanti di method finish() jika pembayaran sukses
-            
-            // 8. Show payment page
+            DB::commit();
+
             return view('customer.checkout.payment', [
-                'snapToken' => $snapToken,
+                'snapToken' => $result->token,
                 'orderId' => $orderId,
                 'transaksi' => $transaksi,
                 'clientKey' => env('MIDTRANS_CLIENT_KEY')
             ]);
-            
+
         } catch (\Exception $e) {
-            Log::error('Payment Error: ' . $e->getMessage());
-            return back()->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Checkout Payment Error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
         }
     }
 
+    /**
+     * Callback setelah dari Midtrans
+     */
     public function finish(Request $request, $orderId)
     {
-        // Pastikan ada data JSON dari Midtrans
-        if (!$request->has('json') || empty($request->json)) {
-            // Jika tidak ada data JSON, mungkin user membatalkan manual
-            $this->restoreCartFromBackup();
-            return redirect()->route('cart.index')
-                ->with('error', 'Pembayaran dibatalkan. Produk telah dikembalikan ke keranjang.');
-        }
-        
-        // Parse callback dari Midtrans
-        $json = json_decode($request->json);
-        
-        if (!$json || !isset($json->transaction_status)) {
-            // Data JSON tidak valid
-            $this->restoreCartFromBackup();
-            return redirect()->route('cart.index')
-                ->with('error', 'Data pembayaran tidak valid. Produk telah dikembalikan ke keranjang.');
-        }
-        
         $transaksi = Transaksi::where('order_id', $orderId)
             ->where('user_id', Auth::id())
             ->firstOrFail();
+
+        if (!$request->has('json')) {
+            $this->restoreCartFromBackup();
+            return redirect()->route('cart.index')->with('error', 'Pembayaran dibatalkan.');
+        }
+
+        $json = json_decode($request->json);
         
-        // Update status transaksi berdasarkan callback
-        if ($json->transaction_status == 'capture' || $json->transaction_status == 'settlement') {
-            // Pembayaran sukses
+        // Cek status sukses
+        if (isset($json->transaction_status) && in_array($json->transaction_status, ['capture', 'settlement'])) {
             $transaksi->update([
                 'status' => 'success',
                 'payment_type' => $json->payment_type ?? null,
                 'transaction_id' => $json->transaction_id ?? null,
-                'transaction_time' => $json->transaction_time ?? null,
-                'fraud_status' => $json->fraud_status ?? null
+                'paid_at' => now(),
             ]);
-            
-            // HAPUS KERANJANG HANYA JIKA PEMBAYARAN SUKSES
+
+            // Sukses = Hapus Keranjang & Session
             Cart::where('user_id', Auth::id())->delete();
-            
-            // Hapus session checkout
             session()->forget(['checkout_data', 'cart_items', 'cart_backup']);
-            
-            return redirect()->route('customer.checkout.invoice', ['orderId' => $orderId])
-                ->with('success', 'Pembayaran berhasil!');
-                
-        } elseif ($json->transaction_status == 'pending') {
-            // Pembayaran pending
-            $transaksi->update([
-                'status' => 'pending',
-                'payment_type' => $json->payment_type ?? null
-            ]);
-            
-            return redirect()->route('customer.checkout.pending')
-                ->with('info', 'Pembayaran masih dalam proses.');
-                
-        } elseif ($json->transaction_status == 'cancel' || $json->transaction_status == 'expire') {
-            // Pembayaran dibatalkan atau expired
-            $transaksi->update([
-                'status' => 'failed',
-                'payment_type' => $json->payment_type ?? null,
-                'transaction_id' => $json->transaction_id ?? null,
-            ]);
-            
-            // Kembalikan keranjang dari backup
-            $this->restoreCartFromBackup();
-            
-            return redirect()->route('cart.index')
-                ->with('error', 'Pembayaran dibatalkan atau telah kedaluwarsa. Produk telah dikembalikan ke keranjang.');
-                
-        } else {
-            // Pembayaran gagal (deny, failure)
-            $transaksi->update([
-                'status' => 'failed',
-                'payment_type' => $json->payment_type ?? null,
-                'transaction_id' => $json->transaction_id ?? null,
-            ]);
-            
-            // Kembalikan keranjang dari backup
-            $this->restoreCartFromBackup();
-            
-            return redirect()->route('cart.index')
-                ->with('error', 'Pembayaran gagal. Produk telah dikembalikan ke keranjang.');
+
+            return redirect()->route('customer.checkout.invoice', $orderId)->with('success', 'Pembayaran Berhasil!');
         }
+
+        // Jika statusnya pending (misal bayar via Alfamart/VA belum dibayar)
+        if (isset($json->transaction_status) && $json->transaction_status == 'pending') {
+            Cart::where('user_id', Auth::id())->delete(); // Tetap hapus keranjang karena sudah jadi pesanan
+            session()->forget(['checkout_data', 'cart_items', 'cart_backup']);
+            return redirect()->route('customer.history')->with('info', 'Silakan selesaikan pembayaran Anda.');
+        }
+
+        // Gagal/Batal
+        $this->restoreCartFromBackup();
+        return redirect()->route('cart.index')->with('error', 'Pembayaran gagal atau dibatalkan.');
     }
 
-    // Method untuk mengembalikan keranjang dari backup
+    /**
+     * Restore Keranjang Belanja jika Batal
+     */
     private function restoreCartFromBackup()
     {
         $user = Auth::user();
-        
-        // Cek apakah user sudah login
-        if (!$user) {
-            return;
-        }
-        
-        // Cek apakah keranjang sudah kosong
-        $existingCartCount = Cart::where('user_id', $user->id)->count();
-        
-        // Jika keranjang kosong dan ada backup, restore
-        if ($existingCartCount == 0 && session()->has('cart_backup')) {
-            $cartBackup = session('cart_backup');
-            
-            foreach ($cartBackup as $item) {
-                // Cek apakah produk sudah ada di keranjang
-                $existingItem = Cart::where('user_id', $user->id)
-                    ->where('produk_id', $item['produk_id'])
-                    ->first();
-                
-                if (!$existingItem) {
-                    Cart::create([
-                        'user_id' => $user->id,
-                        'produk_id' => $item['produk_id'],
-                        'quantity' => $item['quantity'],
-                    ]);
-                }
+        if ($user && session()->has('cart_backup')) {
+            foreach (session('cart_backup') as $item) {
+                Cart::updateOrCreate(
+                    ['user_id' => $user->id, 'produk_id' => $item['produk_id']],
+                    ['quantity' => $item['quantity']]
+                );
             }
         }
-        
-        // Hapus session backup
         session()->forget(['checkout_data', 'cart_items', 'cart_backup']);
-    }
-
-    public function pending()
-    {
-        return view('customer.checkout.pending')
-            ->with('info', 'Menunggu konfirmasi pembayaran.');
     }
 
     public function invoice($orderId)
@@ -351,14 +335,5 @@ class CheckoutController extends Controller
             ->firstOrFail();
         
         return view('customer.checkout.invoice', compact('transaksi'));
-    }
-
-    public function error()
-    {
-        // Restore keranjang jika ada di halaman error
-        $this->restoreCartFromBackup();
-        
-        return view('customer.checkout.error')
-            ->with('error', 'Terjadi kesalahan saat pembayaran. Produk telah dikembalikan ke keranjang.');
     }
 }

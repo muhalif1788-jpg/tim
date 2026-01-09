@@ -4,7 +4,6 @@
 
 @section('content')
 <div class="products-page">
-    <!-- Products Hero Section -->
     <section class="products-hero">
         <div class="container">
             <div class="hero-content">
@@ -12,10 +11,9 @@
                 <p class="hero-subtitle">Beberapa Pilihan Abon Terbaik</p>
                 <p class="hero-description">Temukan berbagai varian abon dengan cita rasa autentik dan kualitas premium</p>
                 
-                <!-- Search Form -->
-                <form action="{{ route('customer.products.search') }}" method="GET" class="search-form">
+                <form action="{{ route('customer.products.index') }}" method="GET" class="search-form">
                     <div class="search-box">
-                        <input type="text" name="q" value="{{ request('q') }}" 
+                        <input type="text" name="search" value="{{ request('search') }}" 
                                placeholder="Cari produk..." class="search-input">
                         <button type="submit" class="search-btn">
                             <i data-feather="search"></i>
@@ -26,19 +24,18 @@
         </div>
     </section>
 
-    <!-- Products Section -->
     <section class="products-section">
         <div class="container">
             <div class="products-header">
                 <h2>Semua Produk</h2>
+                
                 <div class="products-filter">
-                    <!-- Filter Kategori -->
-                    <a href="{{ route('customer.products.index') }}" 
+                    <a href="{{ route('customer.products.index', array_merge(request()->except('kategori'), ['sort' => request('sort', 'terbaru')])) }}" 
                        class="filter-btn {{ !request()->has('kategori') ? 'active' : '' }}">
                         Semua
                     </a>
                     @foreach($kategoris as $kategori)
-                    <a href="{{ route('customer.products.index', ['kategori' => $kategori->id]) }}" 
+                    <a href="{{ route('customer.products.index', array_merge(request()->except('kategori'), ['kategori' => $kategori->id, 'sort' => request('sort', 'terbaru')])) }}" 
                        class="filter-btn {{ request('kategori') == $kategori->id ? 'active' : '' }}">
                         {{ $kategori->nama_kategori }}
                     </a>
@@ -46,9 +43,27 @@
                 </div>
             </div>
 
+            @if(request('search'))
+                <div class="search-info">
+                    <p>Hasil pencarian untuk: <strong>"{{ request('search') }}"</strong></p>
+                    <a href="{{ route('customer.products.index') }}" class="clear-search">
+                        <i data-feather="x"></i> Hapus pencarian
+                    </a>
+                </div>
+            @endif
+
             @if($produk->isEmpty())
                 <div class="no-products">
-                    <p>Belum ada produk tersedia saat ini.</p>
+                    @if(request('search'))
+                        <p>Tidak ada produk yang sesuai dengan pencarian "<strong>{{ request('search') }}</strong>".</p>
+                    @elseif(request('kategori'))
+                        <p>Tidak ada produk dalam kategori ini.</p>
+                    @else
+                        <p>Belum ada produk tersedia saat ini.</p>
+                    @endif
+                    <a href="{{ route('customer.products.index') }}" class="btn btn-primary">
+                        Lihat Semua Produk
+                    </a>
                 </div>
             @else
                 <div class="products-grid">
@@ -62,28 +77,48 @@
                         
                         <div class="product-image">
                             @if($item->gambar)
-                                <img src="{{ asset('storage/' . $item->gambar) }}" alt="{{ $item->nama_produk }}">
+                                <img src="{{ asset('storage/' . $item->gambar) }}" 
+                                     alt="{{ $item->nama_produk }}" loading="lazy">
                             @else
-                                <img src="{{ asset('images/default-product.jpg') }}" alt="{{ $item->nama_produk }}">
+                                <img src="{{ asset('images/default-product.jpg') }}" 
+                                     alt="{{ $item->nama_produk }}" loading="lazy">
                             @endif
                         </div>
                         <div class="product-info">
                             <h3 class="product-name">{{ $item->nama_produk }}</h3>
                             
-                            <!-- Kategori -->
+                            <div class="rating-display" style="display: flex; align-items: center; gap: 5px; margin-top: 5px;">
+                                @php 
+                                    // PERBAIKAN: Menggunakan $item untuk rata-rata dan count
+                                    $avgRating = $item->penilaian->avg('rating') ?: 0; 
+                                    $totalPenilaian = $item->penilaian->count();
+                                @endphp
+                                
+                                <i data-feather="star" style="width: 14px; height: 14px; fill: #fbbf24; color: #fbbf24;"></i>
+                                
+                                <span style="font-size: 13px; color: #6b7280; font-weight: 600;">
+                                    {{ number_format($avgRating, 1) }} 
+                                    <span style="font-weight: 400; color: #9ca3af;">({{ $totalPenilaian }})</span>
+                                </span>
+                            </div>
+                            
                             @if($item->kategori)
                                 <div class="product-category">
                                     <span class="category-badge">{{ $item->kategori->nama_kategori }}</span>
                                 </div>
                             @endif
                             
-                            <!-- Harga -->
                             <div class="product-price">
                                 <span class="current-price">Rp {{ number_format($item->harga, 0, ',', '.') }}</span>
                                 <span class="product-stock">Stok: {{ $item->stok }}</span>
                             </div>
                             
-                            <!-- Actions -->
+                            @if($item->deskripsi)
+                                <div class="product-description-short">
+                                    {{ Str::limit(strip_tags($item->deskripsi), 60) }}
+                                </div>
+                            @endif
+                            
                             <div class="product-actions">
                                 @if($item->stok > 0)
                                     <form action="{{ route('cart.store') }}" method="POST" class="add-to-cart-form">
@@ -102,14 +137,14 @@
                                     </button>
                                 @endif
                                 
-                                <a href="{{ route('customer.products.show', $item->id) }}" class="btn btn-secondary">Detail</a>
+                                <a href="{{ route('customer.products.show', $item->id) }}" 
+                                   class="btn btn-secondary">Detail</a>
                             </div>
                         </div>
                     </div>
                     @endforeach
                 </div>
                 
-                <!-- Pagination -->
                 <div class="pagination">
                     {{ $produk->withQueryString()->links() }}
                 </div>
@@ -149,10 +184,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Update cart count in header
                         updateCartCount(data.cartCount);
-                        
-                        // Show success message
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil!',
@@ -177,7 +209,6 @@
                     });
                 })
                 .finally(() => {
-                    // Reset button
                     button.innerHTML = originalHTML;
                     button.disabled = false;
                     feather.replace();
@@ -185,7 +216,6 @@
             });
         });
         
-        // Update cart count function
         function updateCartCount(count) {
             let cartBadge = document.querySelector('.cart-badge');
             const cartLink = document.querySelector('a[href="{{ route("cart.index") }}"]');
@@ -195,7 +225,7 @@
                     cartBadge = document.createElement('span');
                     cartBadge.className = 'cart-badge';
                     cartBadge.textContent = count;
-                    cartLink.appendChild(cartBadge);
+                    if(cartLink) cartLink.appendChild(cartBadge);
                 } else {
                     cartBadge.textContent = count;
                 }
